@@ -6,6 +6,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.IntentSenderRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -23,11 +24,14 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.zIndex
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
@@ -41,6 +45,7 @@ import com.jian.relive.feature.feed.ui.FeedEmptyView
 import com.jian.relive.feature.feed.ui.FeedFilterSegmentedRow
 import com.jian.relive.feature.feed.ui.FeedHeartBurst
 import com.jian.relive.feature.feed.ui.FeedItemInfoOverlay
+import com.jian.relive.feature.feed.ui.FeedPauseIndicator
 import com.jian.relive.feature.feed.ui.FeedSoundControl
 import com.jian.relive.feature.feed.ui.FeedVolumeToastBadge
 import com.jian.relive.feature.feed.ui.LiveFeedPlayer
@@ -110,6 +115,12 @@ internal fun FeedRoute(
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    val lifecycleState by lifecycleOwner.lifecycle.currentStateFlow.collectAsStateWithLifecycle()
+    val isScreenActive = lifecycleState.isAtLeast(Lifecycle.State.RESUMED)
+
+    var isUserPaused by remember { mutableStateOf(false) }
+    var isPlaybackReady by remember { mutableStateOf(false) }
 
     var pendingTrashItem by remember { mutableStateOf<MediaItem?>(null) }
     var heartBurstTargetId by remember { mutableStateOf<Long?>(null) }
@@ -131,6 +142,19 @@ internal fun FeedRoute(
     val pagerState = rememberPagerState(
         pageCount = { kotlin.math.max(1, uiState.feedItems.size) }
     )
+
+    LaunchedEffect(pagerState.currentPage) {
+        isUserPaused = false
+    }
+
+    LaunchedEffect(isScreenActive, pagerState.isScrollInProgress) {
+        if (isScreenActive && !pagerState.isScrollInProgress) {
+            delay(300)
+            isPlaybackReady = true
+        } else {
+            isPlaybackReady = false
+        }
+    }
 
     LaunchedEffect(uiState.filterType) {
         if (uiState.feedItems.isNotEmpty()) {
@@ -164,13 +188,31 @@ internal fun FeedRoute(
                     val item = uiState.feedItems.getOrNull(page) ?: return@VerticalPager
                     val isCurrentPage = page == pagerState.currentPage
                     val isLiked = uiState.likedIds.contains(item.id)
+                    val shouldPlay = isCurrentPage && isPlaybackReady && !isUserPaused
 
-                    Box(modifier = Modifier.fillMaxSize()) {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .pointerInput(isCurrentPage) {
+                                if (isCurrentPage) {
+                                    detectTapGestures(
+                                        onTap = {
+                                            isUserPaused = !isUserPaused
+                                        }
+                                    )
+                                }
+                            }
+                    ) {
                         LiveFeedPlayer(
                             item = item,
                             isMuted = uiState.isMuted,
-                            shouldPlay = isCurrentPage,
+                            shouldPlay = shouldPlay,
                             modifier = Modifier.fillMaxSize()
+                        )
+
+                        FeedPauseIndicator(
+                            visible = isCurrentPage && isUserPaused,
+                            modifier = Modifier.align(Alignment.Center)
                         )
 
                         FeedItemInfoOverlay(

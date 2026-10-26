@@ -1,6 +1,7 @@
 package com.jian.relive.feature.feed.ui
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.scaleIn
@@ -23,6 +24,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.outlined.VolumeOff
 import androidx.compose.material.icons.automirrored.outlined.VolumeUp
 import androidx.compose.material.icons.filled.Favorite
+import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.outlined.AutoAwesomeMotion
 import androidx.compose.material.icons.outlined.DeleteOutline
 import androidx.compose.material.icons.outlined.FavoriteBorder
@@ -533,3 +535,37 @@ fun FeedDeleteConfirmDialog(
         }
     )
 }
+
+/**
+ * 屏幕中央悬浮的暂停状态指示图标。
+ */
+@Composable
+fun FeedPauseIndicator(
+    visible: Boolean,
+    modifier: Modifier = Modifier
+) {
+    AnimatedVisibility(
+        visible = visible,
+        enter = fadeIn(tween(160)) + scaleIn(initialScale = 1.3f, animationSpec = tween(160)),
+        exit = fadeOut(tween(160)) + scaleOut(targetScale = 0.8f, animationSpec = tween(160)),
+        modifier = modifier
+    ) {
+        Box(
+            modifier = Modifier
+                .size(76.dp)
+                .clip(CircleShape)
+                .background(Color.Black.copy(alpha = 0.45f)),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = Icons.Filled.PlayArrow,
+                contentDescription = null,
+                tint = ReliveWhite.copy(alpha = 0.95f),
+                modifier = Modifier
+                    .size(42.dp)
+                    .padding(start = 4.dp)
+            )
+        }
+    }
+}
+

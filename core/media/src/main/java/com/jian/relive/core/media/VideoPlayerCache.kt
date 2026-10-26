@@ -37,7 +37,7 @@ object VideoPlayerCache {
      * 将播放器释放回池中以便复用；若池已满则直接销毁。
      */
     fun release(player: ExoPlayer) {
-        player.stop()
+        player.playWhenReady = false
         player.clearMediaItems()
 
         synchronized(pool) {

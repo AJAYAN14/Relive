@@ -1,6 +1,9 @@
 package com.jian.relive.feature.feed.ui
 
 import android.net.Uri
+import android.view.TextureView
+import android.view.ViewGroup
+import android.widget.FrameLayout
 import androidx.annotation.OptIn
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
@@ -9,18 +12,20 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableFloatStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem as ExoMediaItem
 import androidx.media3.common.Player
+import androidx.media3.common.VideoSize
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.ui.AspectRatioFrameLayout
-import androidx.media3.ui.PlayerView
 import coil3.compose.AsyncImage
 import coil3.request.CachePolicy
 import coil3.request.ImageRequest
@@ -88,29 +93,32 @@ private fun ExoVideoSurface(
 ) {
     val context = LocalContext.current
     val player = remember { VideoPlayerCache.get(context) }
-    var isPlayerReady by remember { mutableStateOf(false) }
+    var isFirstFrameRendered by remember(uri) { mutableStateOf(false) }
+    var aspectRatio by remember { mutableFloatStateOf(0f) }
 
     DisposableEffect(player) {
         onDispose {
+            player.playWhenReady = false
             VideoPlayerCache.release(player)
         }
     }
 
     LaunchedEffect(uri, shouldPlay) {
         if (shouldPlay) {
-            val exoItem = ExoMediaItem.Builder()
-                .setUri(uri)
-                .setMimeType(mimeType)
-                .build()
-            player.setMediaItem(exoItem)
-            player.repeatMode = Player.REPEAT_MODE_ONE
-            player.prepare()
+            val currentItemUri = player.currentMediaItem?.localConfiguration?.uri
+            if (currentItemUri != uri) {
+                isFirstFrameRendered = false
+                val exoItem = ExoMediaItem.Builder()
+                    .setUri(uri)
+                    .setMimeType(mimeType)
+                    .build()
+                player.setMediaItem(exoItem)
+                player.repeatMode = Player.REPEAT_MODE_ONE
+                player.prepare()
+            }
             player.playWhenReady = true
         } else {
             player.playWhenReady = false
-            player.stop()
-            player.clearMediaItems()
-            isPlayerReady = false
         }
     }
 
@@ -123,36 +131,58 @@ private fun ExoVideoSurface(
             .fillMaxSize()
             .background(ReliveWhite)
     ) {
-        if (!isPlayerReady) {
-            FeedImagePlaceholder(
-                uri = placeholderUri,
-                modifier = Modifier.fillMaxSize()
-            )
-        }
+        FeedImagePlaceholder(
+            uri = placeholderUri,
+            modifier = Modifier.fillMaxSize()
+        )
 
         AndroidView(
             factory = { ctx ->
-                PlayerView(ctx).apply {
-                    this.player = player
-                    useController = false
+                AspectRatioFrameLayout(ctx).apply {
                     resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+                    val textureView = TextureView(ctx).apply {
+                        layoutParams = FrameLayout.LayoutParams(
+                            ViewGroup.LayoutParams.MATCH_PARENT,
+                            ViewGroup.LayoutParams.MATCH_PARENT
+                        )
+                    }
+                    addView(textureView)
+                    player.setVideoTextureView(textureView)
                 }
             },
-            update = { playerView ->
-                playerView.player = player
+            update = { frameLayout ->
+                if (aspectRatio > 0f) {
+                    frameLayout.setAspectRatio(aspectRatio)
+                }
             },
-            modifier = Modifier.fillMaxSize()
+            onRelease = { frameLayout ->
+                val textureView = frameLayout.getChildAt(0) as? TextureView
+                player.clearVideoTextureView(textureView)
+            },
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    alpha = if (isFirstFrameRendered) 1f else 0f
+                }
         )
 
         DisposableEffect(player) {
             val listener = object : Player.Listener {
-                override fun onPlaybackStateChanged(state: Int) {
-                    if (state == Player.STATE_READY) {
-                        isPlayerReady = true
+                override fun onRenderedFirstFrame() {
+                    isFirstFrameRendered = true
+                }
+
+                override fun onVideoSizeChanged(videoSize: VideoSize) {
+                    if (videoSize.width > 0 && videoSize.height > 0) {
+                        aspectRatio = videoSize.width.toFloat() / videoSize.height
                     }
                 }
             }
             player.addListener(listener)
+            val currentSize = player.videoSize
+            if (currentSize.width > 0 && currentSize.height > 0) {
+                aspectRatio = currentSize.width.toFloat() / currentSize.height
+            }
             onDispose {
                 player.removeListener(listener)
             }
