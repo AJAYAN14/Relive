@@ -23,9 +23,11 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.imePadding
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.pager.VerticalPager
@@ -133,7 +135,6 @@ fun LikesView(
     val context = LocalContext.current
     val prefs = remember { PreferencesManager(context) }
     val scope = rememberCoroutineScope()
-    val topInset = 48.dp
 
     var danmakuEnabled by remember { mutableStateOf(prefs.danmakuEnabled) }
     var selectedBucketName by remember { mutableStateOf<String?>(null) }
@@ -497,6 +498,7 @@ fun LikesView(
                     Column(
                         modifier = Modifier
                             .align(Alignment.BottomStart)
+                            .navigationBarsPadding()
                             .padding(start = 16.dp, bottom = 24.dp)
                     ) {
                         if (currentItem.location.isNotBlank() && currentItem.location != "Unknown Location") {
@@ -522,7 +524,8 @@ fun LikesView(
             Box(
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = topInset)
+                    .statusBarsPadding()
+                    .padding(top = 12.dp)
                     .zIndex(10f),
                 contentAlignment = Alignment.Center
             ) {
@@ -608,7 +611,8 @@ fun LikesView(
                 Column(
                     modifier = Modifier
                         .align(Alignment.BottomEnd)
-                        .padding(end = 16.dp, bottom = 64.dp),
+                        .navigationBarsPadding()
+                        .padding(end = 16.dp, bottom = 32.dp),
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.spacedBy(24.dp)
                 ) {
@@ -779,7 +783,8 @@ fun LikesView(
             onClick = onBack,
             modifier = Modifier
                 .align(Alignment.TopStart)
-                .padding(top = topInset, start = 16.dp)
+                .statusBarsPadding()
+                .padding(top = 12.dp, start = 16.dp)
                 .clip(CircleShape)
                 .background(ReliveBlack.copy(alpha = 0.2f))
                 .bounceClick(onClick = onBack)

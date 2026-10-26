@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -167,7 +168,8 @@ fun MonthlyListView(
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 48.dp, start = 16.dp, end = 16.dp, bottom = 24.dp)
+                .statusBarsPadding()
+                .padding(top = 12.dp, start = 16.dp, end = 16.dp, bottom = 16.dp)
         ) {
             IconButton(
                 onClick = onBack,
@@ -413,7 +415,8 @@ fun MonthlyReviewView(
                 onClick = onBack,
                 modifier = Modifier
                     .align(Alignment.TopStart)
-                    .padding(top = 48.dp, start = 16.dp)
+                    .statusBarsPadding()
+                    .padding(top = 12.dp, start = 16.dp)
                     .background(ReliveBlack.copy(alpha = 0.2f), CircleShape)
             ) {
                 Icon(
@@ -427,7 +430,8 @@ fun MonthlyReviewView(
                 text = stringResource(R.string.organize_monthly_remaining, queue.size),
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = 60.dp),
+                    .statusBarsPadding()
+                    .padding(top = 20.dp),
                 color = ReliveBlack.copy(alpha = 0.5f),
                 fontFamily = FontFamily.Monospace,
                 fontSize = 14.sp
@@ -482,7 +486,8 @@ fun MonthlyReviewView(
                     onClick = onTrashClick,
                     modifier = Modifier
                         .align(Alignment.TopEnd)
-                        .padding(top = 48.dp, end = 16.dp),
+                        .statusBarsPadding()
+                        .padding(top = 12.dp, end = 16.dp),
                     colors = ButtonDefaults.buttonColors(containerColor = ReliveRed50),
                     shape = RoundedCornerShape(20.dp),
                     border = BorderStroke(1.dp, ReliveRed200),

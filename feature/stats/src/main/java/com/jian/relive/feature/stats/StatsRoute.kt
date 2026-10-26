@@ -9,8 +9,10 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
@@ -79,7 +81,8 @@ internal fun StatsRoute(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 48.dp, start = 16.dp, end = 16.dp, bottom = 12.dp)
+                    .statusBarsPadding()
+                    .padding(top = 12.dp, start = 16.dp, end = 16.dp, bottom = 12.dp)
             ) {
                 Box(
                     modifier = Modifier
@@ -149,7 +152,11 @@ internal fun StatsRoute(
                     heatmapData = uiState.stats.heatmapData
                 )
 
-                Spacer(modifier = Modifier.height(32.dp))
+                Spacer(
+                    modifier = Modifier
+                        .navigationBarsPadding()
+                        .height(80.dp)
+                )
             }
         }
     }

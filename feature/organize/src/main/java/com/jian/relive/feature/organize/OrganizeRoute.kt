@@ -24,6 +24,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -456,7 +457,8 @@ private fun MainOrganizeContent(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 48.dp, start = 20.dp, end = 20.dp, bottom = 12.dp)
+                    .statusBarsPadding()
+                    .padding(top = 12.dp, start = 20.dp, end = 20.dp, bottom = 12.dp)
             ) {
                 IconButton(
                     onClick = onNavigateToStats,

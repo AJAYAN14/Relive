@@ -12,6 +12,7 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.navigationBarsPadding
@@ -136,12 +137,11 @@ class MainActivity : ComponentActivity() {
             CompositionLocalProvider(LocalAppGraph provides appGraph) {
                 ReliveTheme {
                     Scaffold(
-                        modifier = Modifier.fillMaxSize()
-                    ) { innerPadding ->
+                        modifier = Modifier.fillMaxSize(),
+                        contentWindowInsets = WindowInsets(0.dp)
+                    ) { _ ->
                         Box(
-                            modifier = Modifier
-                                .fillMaxSize()
-                                .padding(innerPadding)
+                            modifier = Modifier.fillMaxSize()
                         ) {
                             ReliveNavHost(
                                 navController = navController,

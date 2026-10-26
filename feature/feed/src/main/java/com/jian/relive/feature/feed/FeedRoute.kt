@@ -9,7 +9,9 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.pager.VerticalPager
 import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.runtime.Composable
@@ -165,7 +167,9 @@ internal fun FeedRoute(
                         FeedItemInfoOverlay(
                             item = item,
                             bottomPadding = bottomPadding,
-                            modifier = Modifier.align(Alignment.BottomCenter)
+                            modifier = Modifier
+                                .align(Alignment.BottomCenter)
+                                .navigationBarsPadding()
                         )
 
                         FeedActionsColumn(
@@ -187,7 +191,9 @@ internal fun FeedRoute(
                             onDeleteClick = {
                                 viewModel.setItemToDelete(item)
                             },
-                            modifier = Modifier.align(Alignment.BottomEnd)
+                            modifier = Modifier
+                                .align(Alignment.BottomEnd)
+                                .navigationBarsPadding()
                         )
 
                         FeedHeartBurst(
@@ -201,7 +207,8 @@ internal fun FeedRoute(
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .padding(top = 48.dp, start = 16.dp, end = 16.dp)
+                    .statusBarsPadding()
+                    .padding(top = 12.dp, start = 16.dp, end = 16.dp)
                     .zIndex(10f)
             ) {
                 FeedFilterSegmentedRow(
@@ -223,7 +230,8 @@ internal fun FeedRoute(
                 visible = uiState.showVolumeToast,
                 modifier = Modifier
                     .align(Alignment.TopCenter)
-                    .padding(top = 104.dp)
+                    .statusBarsPadding()
+                    .padding(top = 64.dp)
                     .zIndex(15f)
             )
 
