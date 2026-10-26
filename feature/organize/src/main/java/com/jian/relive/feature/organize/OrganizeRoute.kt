@@ -46,6 +46,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -118,7 +119,8 @@ fun NavGraphBuilder.organizeScreen(
     onNavigateToStats: () -> Unit = {},
     onNavigateToClean: () -> Unit = {},
     onNavigateToCompress: () -> Unit = {},
-    onNavigateToLikes: () -> Unit = {}
+    onNavigateToLikes: () -> Unit = {},
+    onOverlayActiveChanged: (Boolean) -> Unit = {}
 ) {
     composable<OrganizeRoute> {
         val vmFactory = remember(mediaRepository) {
@@ -133,7 +135,8 @@ fun NavGraphBuilder.organizeScreen(
             onNavigateToStats = onNavigateToStats,
             onNavigateToClean = onNavigateToClean,
             onNavigateToCompress = onNavigateToCompress,
-            onNavigateToLikes = onNavigateToLikes
+            onNavigateToLikes = onNavigateToLikes,
+            onOverlayActiveChanged = onOverlayActiveChanged
         )
     }
 }
@@ -145,7 +148,8 @@ internal fun OrganizeScreen(
     onNavigateToStats: () -> Unit = {},
     onNavigateToClean: () -> Unit = {},
     onNavigateToCompress: () -> Unit = {},
-    onNavigateToLikes: () -> Unit = {}
+    onNavigateToLikes: () -> Unit = {},
+    onOverlayActiveChanged: (Boolean) -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var currentOverlay by remember { mutableStateOf(OrganizeOverlay.NONE) }
@@ -155,6 +159,14 @@ internal fun OrganizeScreen(
     var pendingMoveItem by remember { mutableStateOf<MediaItem?>(null) }
     var pendingDeletedIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
     var fullScreenViewerItem by remember { mutableStateOf<MediaItem?>(null) }
+
+    val isOverlayActive = currentOverlay != OrganizeOverlay.NONE || fullScreenViewerItem != null
+    DisposableEffect(isOverlayActive) {
+        onOverlayActiveChanged(isOverlayActive)
+        onDispose {
+            onOverlayActiveChanged(false)
+        }
+    }
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()

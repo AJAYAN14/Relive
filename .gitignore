@@ -11,3 +11,9 @@ captures/
 .externalNativeBuild
 .cxx
 原项目/
+key/
+*.jks
+*.keystore
+*.apk
+*.aab
+app/release/

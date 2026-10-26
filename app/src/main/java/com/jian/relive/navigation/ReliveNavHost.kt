@@ -26,24 +26,32 @@ import com.jian.relive.feature.settings.settingsScreen
 import com.jian.relive.feature.settings.ui.WelcomeScreen
 import com.jian.relive.feature.stats.StatsRoute
 import com.jian.relive.feature.stats.statsScreen
+import com.jian.relive.ui.SplashRoute
+import com.jian.relive.ui.SplashScreen
 
 @Composable
 fun ReliveNavHost(
     navController: NavHostController,
     modifier: Modifier = Modifier,
-    startDestination: Any = OrganizeRoute,
+    startDestination: Any = SplashRoute,
     hasPermission: Boolean = true,
     onRequestPermission: () -> Unit = {},
     hasManageStorage: Boolean = true,
     onRequestManageStorage: () -> Unit = {},
     mediaRepository: MediaRepository? = null,
-    onFinishWelcome: () -> Unit = {}
+    onFinishWelcome: () -> Unit = {},
+    onOverlayActiveChanged: (Boolean) -> Unit = {},
+    onSplashComplete: () -> Unit = {}
 ) {
     NavHost(
         navController = navController,
         startDestination = startDestination,
         modifier = modifier
     ) {
+        composable<SplashRoute> {
+            SplashScreen(onSplashComplete = onSplashComplete)
+        }
+
         composable<WelcomeRoute> {
             val context = LocalContext.current
             val prefs = remember { PreferencesManager(context) }
@@ -65,6 +73,7 @@ fun ReliveNavHost(
 
         organizeScreen(
             mediaRepository = mediaRepository,
+            onOverlayActiveChanged = onOverlayActiveChanged,
             onNavigateToStats = {
                 navController.navigate(StatsRoute)
             },

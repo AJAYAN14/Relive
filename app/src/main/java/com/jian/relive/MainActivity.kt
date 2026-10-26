@@ -19,6 +19,12 @@ import com.jian.relive.core.media.MotionPhotoHelper
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.slideInVertically
+import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -50,6 +56,7 @@ import com.jian.relive.feature.organize.OrganizeRoute
 import com.jian.relive.feature.settings.SettingsRoute
 import com.jian.relive.feature.settings.WelcomeRoute
 import com.jian.relive.feature.stats.StatsRoute
+import com.jian.relive.ui.SplashRoute
 import com.jian.relive.navigation.AppBottomNavigationBar
 import com.jian.relive.navigation.MainNavTab
 import com.jian.relive.navigation.ReliveNavHost
@@ -59,6 +66,7 @@ class MainActivity : ComponentActivity() {
         val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+        requestHighestRefreshRate()
 
         val appGraph = AppGraph(applicationContext)
         val initialPrefs = appGraph.preferencesManager
@@ -179,9 +187,28 @@ class MainActivity : ComponentActivity() {
                 }
             }
 
+            var isOrganizeOverlayActive by remember { mutableStateOf(false) }
+
             val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val isWelcomeRoute = navBackStackEntry?.destination?.hasRoute<WelcomeRoute>() == true
-            val showBottomBar = onboardingCompleted && !isWelcomeRoute
+            val currentDestination = navBackStackEntry?.destination
+
+            LaunchedEffect(currentDestination) {
+                when {
+                    currentDestination?.hasRoute<OrganizeRoute>() == true -> currentTab = MainNavTab.ORGANIZE
+                    currentDestination?.hasRoute<FeedRoute>() == true -> currentTab = MainNavTab.LIVE_FEED
+                    currentDestination?.hasRoute<StatsRoute>() == true -> currentTab = MainNavTab.STATS
+                    currentDestination?.hasRoute<SettingsRoute>() == true -> currentTab = MainNavTab.SETTINGS
+                }
+            }
+
+            val isTopLevelRoute = currentDestination?.let { dest ->
+                dest.hasRoute<OrganizeRoute>() ||
+                dest.hasRoute<FeedRoute>() ||
+                dest.hasRoute<StatsRoute>() ||
+                dest.hasRoute<SettingsRoute>()
+            } ?: false
+
+            val showBottomBar = onboardingCompleted && isTopLevelRoute && !isOrganizeOverlayActive
 
             CompositionLocalProvider(LocalAppGraph provides appGraph) {
                 ReliveTheme {
@@ -194,12 +221,21 @@ class MainActivity : ComponentActivity() {
                         ) {
                             ReliveNavHost(
                                 navController = navController,
-                                startDestination = if (onboardingCompleted) OrganizeRoute else WelcomeRoute,
+                                startDestination = SplashRoute,
                                 hasPermission = hasPermission,
                                 onRequestPermission = requestPermissions,
                                 hasManageStorage = hasManageStorage,
                                 onRequestManageStorage = requestManageStorage,
                                 mediaRepository = appGraph.mediaRepository,
+                                onSplashComplete = {
+                                    val destination = if (onboardingCompleted) OrganizeRoute else WelcomeRoute
+                                    navController.navigate(destination) {
+                                        popUpTo(SplashRoute) {
+                                            inclusive = true
+                                        }
+                                        launchSingleTop = true
+                                    }
+                                },
                                 onFinishWelcome = {
                                     prefs.onboardingCompleted = true
                                     onboardingCompleted = true
@@ -210,10 +246,19 @@ class MainActivity : ComponentActivity() {
                                         launchSingleTop = true
                                     }
                                 },
+                                onOverlayActiveChanged = { isOrganizeOverlayActive = it },
                                 modifier = Modifier.fillMaxSize()
                             )
 
-                            if (showBottomBar) {
+                            AnimatedVisibility(
+                                visible = showBottomBar,
+                                enter = fadeIn(animationSpec = tween(200)) + slideInVertically { it },
+                                exit = fadeOut(animationSpec = tween(200)) + slideOutVertically { it },
+                                modifier = Modifier
+                                    .align(Alignment.BottomCenter)
+                                    .navigationBarsPadding()
+                                    .padding(bottom = 16.dp)
+                            ) {
                                 AppBottomNavigationBar(
                                     currentTab = currentTab,
                                     onTabSelected = { tab ->
@@ -231,17 +276,27 @@ class MainActivity : ComponentActivity() {
                                             launchSingleTop = true
                                             restoreState = true
                                         }
-                                    },
-                                    modifier = Modifier
-                                        .align(Alignment.BottomCenter)
-                                        .navigationBarsPadding()
-                                        .padding(bottom = 16.dp)
+                                    }
                                 )
                             }
                         }
                     }
                 }
             }
+        }
+    }
+
+    private fun requestHighestRefreshRate() {
+        val currentDisplay = display ?: return
+        val currentMode = currentDisplay.mode
+        val targetMode = currentDisplay.supportedModes
+            .filter { it.physicalWidth == currentMode.physicalWidth && it.physicalHeight == currentMode.physicalHeight }
+            .maxByOrNull { it.refreshRate }
+
+        if (targetMode != null) {
+            val layoutParams = window.attributes
+            layoutParams.preferredDisplayModeId = targetMode.modeId
+            window.attributes = layoutParams
         }
     }
 }
