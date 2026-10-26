@@ -59,7 +59,11 @@ import com.jian.relive.core.model.MediaItem
 import com.jian.relive.core.ui.animation.bounceClick
 import com.jian.relive.core.ui.composition.LocalHapticsEnabled
 import com.jian.relive.core.ui.theme.ReliveBlack
-import com.jian.relive.core.ui.theme.ReliveDarkNavBackground
+import com.jian.relive.core.ui.theme.ReliveGray100
+import com.jian.relive.core.ui.theme.ReliveGray400
+import com.jian.relive.core.ui.theme.ReliveGray500
+import com.jian.relive.core.ui.theme.ReliveGray600
+import com.jian.relive.core.ui.theme.ReliveGray700
 import com.jian.relive.core.ui.theme.ReliveRed500
 import com.jian.relive.core.ui.theme.ReliveWhite
 import com.jian.relive.feature.feed.R
@@ -84,7 +88,7 @@ fun FeedFilterSegmentedRow(
     Row(
         modifier = modifier
             .clip(RoundedCornerShape(24.dp))
-            .background(ReliveBlack.copy(alpha = 0.45f))
+            .background(ReliveGray100)
             .padding(4.dp),
         horizontalArrangement = Arrangement.spacedBy(4.dp),
         verticalAlignment = Alignment.CenterVertically
@@ -94,7 +98,7 @@ fun FeedFilterSegmentedRow(
             Box(
                 modifier = Modifier
                     .clip(RoundedCornerShape(20.dp))
-                    .background(if (isSelected) ReliveWhite else Color.Transparent)
+                    .background(if (isSelected) ReliveBlack else Color.Transparent)
                     .clickable {
                         if (!isSelected) {
                             if (hapticsAllowed) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
@@ -108,7 +112,7 @@ fun FeedFilterSegmentedRow(
                     text = stringResource(filter.titleRes),
                     fontSize = 13.sp,
                     fontWeight = if (isSelected) FontWeight.Bold else FontWeight.Medium,
-                    color = if (isSelected) ReliveBlack else ReliveWhite.copy(alpha = 0.75f)
+                    color = if (isSelected) ReliveWhite else ReliveGray600
                 )
             }
         }
@@ -137,12 +141,12 @@ fun FeedSoundControl(
             modifier = Modifier
                 .size(38.dp)
                 .clip(CircleShape)
-                .background(ReliveBlack.copy(alpha = 0.45f))
+                .background(ReliveGray100)
         ) {
             Icon(
                 imageVector = if (isMuted) Icons.AutoMirrored.Outlined.VolumeOff else Icons.AutoMirrored.Outlined.VolumeUp,
                 contentDescription = stringResource(if (isMuted) R.string.feed_sound_muted else R.string.feed_sound_unmuted),
-                tint = ReliveWhite,
+                tint = ReliveBlack,
                 modifier = Modifier.size(20.dp)
             )
         }
@@ -166,7 +170,7 @@ fun FeedVolumeToastBadge(
     ) {
         Surface(
             shape = RoundedCornerShape(20.dp),
-            color = ReliveBlack.copy(alpha = 0.75f),
+            color = ReliveWhite,
             shadowElevation = 4.dp
         ) {
             Row(
@@ -177,14 +181,14 @@ fun FeedVolumeToastBadge(
                     imageVector = if (isMuted) Icons.AutoMirrored.Outlined.VolumeOff else Icons.AutoMirrored.Outlined.VolumeUp,
                     contentDescription = null,
                     modifier = Modifier.size(16.dp),
-                    tint = ReliveWhite
+                    tint = ReliveBlack
                 )
                 Spacer(modifier = Modifier.width(6.dp))
                 Text(
                     text = stringResource(if (isMuted) R.string.feed_sound_muted else R.string.feed_sound_unmuted),
                     fontSize = 12.sp,
                     fontWeight = FontWeight.Medium,
-                    color = ReliveWhite
+                    color = ReliveBlack
                 )
             }
         }
@@ -206,7 +210,7 @@ fun FeedItemInfoOverlay(
             .height(220.dp)
             .background(
                 Brush.verticalGradient(
-                    colors = listOf(Color.Transparent, ReliveBlack.copy(alpha = 0.85f))
+                    colors = listOf(Color.Transparent, ReliveWhite.copy(alpha = 0.9f))
                 )
             )
     ) {
@@ -224,14 +228,14 @@ fun FeedItemInfoOverlay(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
-                            .background(ReliveWhite.copy(alpha = 0.9f))
+                            .background(ReliveBlack)
                             .padding(horizontal = 8.dp, vertical = 3.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Outlined.MotionPhotosOn,
                                 contentDescription = null,
-                                tint = ReliveBlack,
+                                tint = ReliveWhite,
                                 modifier = Modifier.size(13.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
@@ -239,7 +243,7 @@ fun FeedItemInfoOverlay(
                                 text = stringResource(R.string.feed_tag_live),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = ReliveBlack
+                                color = ReliveWhite
                             )
                         }
                     }
@@ -247,14 +251,14 @@ fun FeedItemInfoOverlay(
                     Box(
                         modifier = Modifier
                             .clip(RoundedCornerShape(6.dp))
-                            .background(ReliveWhite.copy(alpha = 0.2f))
+                            .background(ReliveGray100)
                             .padding(horizontal = 8.dp, vertical = 3.dp)
                     ) {
                         Row(verticalAlignment = Alignment.CenterVertically) {
                             Icon(
                                 imageVector = Icons.Outlined.Videocam,
                                 contentDescription = null,
-                                tint = ReliveWhite,
+                                tint = ReliveBlack,
                                 modifier = Modifier.size(13.dp)
                             )
                             Spacer(modifier = Modifier.width(4.dp))
@@ -262,7 +266,7 @@ fun FeedItemInfoOverlay(
                                 text = stringResource(R.string.feed_tag_video),
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.SemiBold,
-                                color = ReliveWhite
+                                color = ReliveBlack
                             )
                         }
                     }
@@ -272,7 +276,7 @@ fun FeedItemInfoOverlay(
                     Text(
                         text = item.bucketName,
                         fontSize = 12.sp,
-                        color = ReliveWhite.copy(alpha = 0.65f),
+                        color = ReliveGray600,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -293,7 +297,7 @@ fun FeedItemInfoOverlay(
                     text = dateFormatted,
                     fontSize = 14.sp,
                     fontWeight = FontWeight.SemiBold,
-                    color = ReliveWhite
+                    color = ReliveBlack
                 )
             }
 
@@ -303,14 +307,14 @@ fun FeedItemInfoOverlay(
                     Icon(
                         imageVector = Icons.Outlined.LocationOn,
                         contentDescription = null,
-                        tint = ReliveWhite.copy(alpha = 0.7f),
+                        tint = ReliveGray500,
                         modifier = Modifier.size(12.dp)
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     Text(
                         text = item.location,
                         fontSize = 12.sp,
-                        color = ReliveWhite.copy(alpha = 0.75f),
+                        color = ReliveGray600,
                         maxLines = 1,
                         overflow = TextOverflow.Ellipsis
                     )
@@ -350,13 +354,13 @@ fun FeedActionsColumn(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(ReliveBlack.copy(alpha = 0.35f))
+                .background(ReliveGray100)
                 .bounceClick(onClick = onLikeClick)
         ) {
             Icon(
                 imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                 contentDescription = stringResource(R.string.feed_like),
-                tint = if (isLiked) ReliveRed500 else ReliveWhite,
+                tint = if (isLiked) ReliveRed500 else ReliveBlack,
                 modifier = Modifier.size(26.dp)
             )
         }
@@ -369,13 +373,13 @@ fun FeedActionsColumn(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(ReliveBlack.copy(alpha = 0.35f))
+                .background(ReliveGray100)
                 .bounceClick(onClick = { MediaShareHelper.shareMedia(context, item) })
         ) {
             Icon(
                 imageVector = Icons.Outlined.Share,
                 contentDescription = stringResource(R.string.feed_share),
-                tint = ReliveWhite,
+                tint = ReliveBlack,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -388,13 +392,13 @@ fun FeedActionsColumn(
             modifier = Modifier
                 .size(48.dp)
                 .clip(CircleShape)
-                .background(ReliveBlack.copy(alpha = 0.35f))
+                .background(ReliveGray100)
                 .bounceClick(onClick = onDeleteClick)
         ) {
             Icon(
                 imageVector = Icons.Outlined.DeleteOutline,
                 contentDescription = stringResource(R.string.feed_delete_button),
-                tint = ReliveWhite,
+                tint = ReliveBlack,
                 modifier = Modifier.size(24.dp)
             )
         }
@@ -447,7 +451,7 @@ fun FeedEmptyView(
                 modifier = Modifier
                     .size(72.dp)
                     .clip(CircleShape)
-                    .background(ReliveWhite.copy(alpha = 0.08f)),
+                    .background(ReliveGray100),
                 contentAlignment = Alignment.Center
             ) {
                 Icon(
@@ -457,7 +461,7 @@ fun FeedEmptyView(
                         FeedFilterType.ALL -> Icons.Outlined.AutoAwesomeMotion
                     },
                     contentDescription = null,
-                    tint = ReliveWhite.copy(alpha = 0.6f),
+                    tint = ReliveGray400,
                     modifier = Modifier.size(36.dp)
                 )
             }
@@ -468,7 +472,7 @@ fun FeedEmptyView(
                 text = stringResource(R.string.feed_empty_title),
                 fontSize = 17.sp,
                 fontWeight = FontWeight.SemiBold,
-                color = ReliveWhite
+                color = ReliveBlack
             )
 
             Spacer(modifier = Modifier.height(6.dp))
@@ -476,7 +480,7 @@ fun FeedEmptyView(
             Text(
                 text = stringResource(R.string.feed_empty_subtitle),
                 fontSize = 13.sp,
-                color = ReliveWhite.copy(alpha = 0.5f),
+                color = ReliveGray500,
                 textAlign = TextAlign.Center
             )
         }
@@ -493,9 +497,9 @@ fun FeedDeleteConfirmDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        containerColor = ReliveDarkNavBackground,
-        titleContentColor = ReliveWhite,
-        textContentColor = ReliveWhite.copy(alpha = 0.85f),
+        containerColor = ReliveWhite,
+        titleContentColor = ReliveBlack,
+        textContentColor = ReliveGray700,
         shape = RoundedCornerShape(24.dp),
         title = {
             Text(
@@ -523,7 +527,7 @@ fun FeedDeleteConfirmDialog(
             TextButton(onClick = onDismiss) {
                 Text(
                     text = stringResource(R.string.feed_cancel_button),
-                    color = ReliveWhite.copy(alpha = 0.7f)
+                    color = ReliveGray600
                 )
             }
         }

@@ -28,7 +28,7 @@ import coil3.request.crossfade
 import com.jian.relive.core.media.MotionPhotoHelper
 import com.jian.relive.core.media.VideoPlayerCache
 import com.jian.relive.core.model.MediaItem
-import com.jian.relive.core.ui.theme.ReliveBlack
+import com.jian.relive.core.ui.theme.ReliveWhite
 
 /**
  * 竖向沉浸式流媒体播放器组件。
@@ -121,7 +121,7 @@ private fun ExoVideoSurface(
     Box(
         modifier = modifier
             .fillMaxSize()
-            .background(ReliveBlack)
+            .background(ReliveWhite)
     ) {
         if (!isPlayerReady) {
             FeedImagePlaceholder(
@@ -179,6 +179,6 @@ private fun FeedImagePlaceholder(
         contentScale = ContentScale.Fit,
         modifier = modifier
             .fillMaxSize()
-            .background(ReliveBlack)
+            .background(ReliveWhite)
     )
 }

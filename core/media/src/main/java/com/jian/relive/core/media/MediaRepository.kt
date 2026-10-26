@@ -10,10 +10,16 @@ import com.jian.relive.core.common.util.formatShutterSpeed
 import com.jian.relive.core.model.MediaItem
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineDispatcher
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
 /**
@@ -24,6 +30,9 @@ import kotlinx.coroutines.withContext
 class MediaRepository(
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.IO
 ) {
+    private val repositoryScope = CoroutineScope(SupervisorJob() + defaultDispatcher)
+    private var scanJob: Job? = null
+
     private val _mediaItems = MutableStateFlow<List<MediaItem>>(emptyList())
     val mediaItems: StateFlow<List<MediaItem>> = _mediaItems.asStateFlow()
 
@@ -53,6 +62,7 @@ class MediaRepository(
         context: Context,
         coroutineDispatcher: CoroutineDispatcher = defaultDispatcher
     ): List<MediaItem> = withContext(coroutineDispatcher) {
+        MotionPhotoHelper.initCache(context)
         val items = mutableListOf<MediaItem>()
 
         val projection = arrayOf(
@@ -242,7 +252,38 @@ class MediaRepository(
         }
 
         _mediaItems.value = items
+        startMotionPhotoScan(context, items)
         items
+    }
+
+    private fun startMotionPhotoScan(context: Context, items: List<MediaItem>) {
+        scanJob?.cancel()
+        val unscannedPhotos = items.filter {
+            it.type == "photo" && it.size >= 1500 * 1024L && MotionPhotoHelper.isKnownMotionPhoto(it.id) == null
+        }
+        if (unscannedPhotos.isEmpty()) return
+
+        scanJob = repositoryScope.launch {
+            var scannedCount = 0
+            for (photo in unscannedPhotos) {
+                if (!isActive) break
+                val isMotion = MotionPhotoHelper.isMotionPhoto(context, photo.id, photo.uri, photo.path, photo.size)
+                if (isMotion) {
+                    _mediaItems.update { currentList ->
+                        currentList.map {
+                            if (it.id == photo.id) it.copy(isLivePhoto = true) else it
+                        }
+                    }
+                }
+                scannedCount++
+                if (scannedCount % 50 == 0) {
+                    MotionPhotoHelper.persistCache(context)
+                }
+            }
+            if (scannedCount > 0) {
+                MotionPhotoHelper.persistCache(context)
+            }
+        }
     }
 
     /**

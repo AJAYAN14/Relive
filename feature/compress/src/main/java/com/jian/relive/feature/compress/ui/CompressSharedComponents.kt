@@ -42,6 +42,7 @@ import com.jian.relive.core.ui.theme.ReliveGray100
 import com.jian.relive.core.ui.theme.ReliveGray200
 import com.jian.relive.core.ui.theme.ReliveGray600
 import com.jian.relive.core.ui.theme.ReliveGray900
+import com.jian.relive.core.ui.theme.RelivePrimary
 import com.jian.relive.core.ui.theme.ReliveRed500
 import com.jian.relive.core.ui.theme.ReliveWarningRedBg
 import com.jian.relive.core.ui.theme.ReliveWarningRedBody
@@ -193,7 +194,7 @@ fun CompressionFooter(
                 onClick = onCompress,
                 enabled = enabled && !isCompressing,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = ReliveGray900,
+                    containerColor = RelivePrimary,
                     disabledContainerColor = ReliveGray200
                 ),
                 shape = RoundedCornerShape(16.dp),

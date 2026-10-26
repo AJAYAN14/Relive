@@ -12,6 +12,7 @@ import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectDragGestures
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.BoxScope
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
@@ -31,10 +32,12 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.key
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.rememberUpdatedState
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.BiasAlignment
@@ -42,6 +45,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.draw.shadow
+import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.input.pointer.pointerInput
@@ -58,6 +64,7 @@ import com.jian.relive.core.model.MediaItem
 import com.jian.relive.core.model.SwipeDirection
 import com.jian.relive.core.model.UndoAnimationTarget
 import com.jian.relive.core.ui.composition.LocalHapticsEnabled
+import com.jian.relive.core.ui.sound.rememberSoundEffectHelper
 import com.jian.relive.core.ui.theme.ReliveBlue500
 import com.jian.relive.core.ui.theme.ReliveOrange
 import com.jian.relive.core.ui.theme.ReliveRed500
@@ -77,39 +84,113 @@ fun OrganizeCardStack(
     items: List<MediaItem>,
     undoAnimationTarget: UndoAnimationTarget?,
     modifier: Modifier = Modifier,
+    animationToken: Any? = null,
     onSwipeLeft: (MediaItem) -> Unit,
     onSwipeRight: (MediaItem) -> Unit,
     onSwipeUp: (MediaItem) -> Unit,
     onDetail: (MediaItem) -> Unit = {},
     onLongClick: (MediaItem) -> Unit = {},
-    onClearUndoAnimation: () -> Unit = {}
+    onClearUndoAnimation: () -> Unit = {},
+    onDragOffsetChange: ((Offset) -> Unit)? = null
 ) {
     if (items.isEmpty()) return
 
     val visibleItems = items.take(3)
-    val topItem = visibleItems.first()
+    val soundEffectHelper = rememberSoundEffectHelper()
+    val configuration = LocalConfiguration.current
+    val density = LocalDensity.current
+
+    val screenWidthPx = with(density) { configuration.screenWidthDp.dp.toPx() }
+    val screenHeightPx = with(density) { configuration.screenHeightDp.dp.toPx() }
+    val cardHeightPx = screenWidthPx * 0.85f * (14f / 9f)
+    val entryOffscreenY = screenHeightPx + cardHeightPx + 120f
+
+    val entryRotationSeeds = remember { listOf(-16f, 12f, -10f, 18f, -14f, 9f) }
+    var isInitialLoad by rememberSaveable(animationToken) { mutableStateOf(true) }
+
+    val cardEntryOffsets = remember(animationToken, entryOffscreenY) {
+        List(6) { Animatable(if (isInitialLoad) entryOffscreenY else 0f) }
+    }
+    val cardEntryRotations = remember(animationToken) {
+        entryRotationSeeds.map { Animatable(if (isInitialLoad) it else 0f) }
+    }
+    val entryStaggerMs = 120L
+
+    LaunchedEffect(animationToken) {
+        if (isInitialLoad && visibleItems.isNotEmpty()) {
+            soundEffectHelper.playStart()
+            cardEntryOffsets.forEachIndexed { index, anim ->
+                launch {
+                    delay(index * entryStaggerMs)
+                    anim.animateTo(
+                        targetValue = 0f,
+                        animationSpec = spring(
+                            dampingRatio = 0.6f,
+                            stiffness = 600f
+                        )
+                    )
+                }
+            }
+            cardEntryRotations.forEachIndexed { index, anim ->
+                launch {
+                    delay(index * entryStaggerMs)
+                    anim.animateTo(
+                        targetValue = 0f,
+                        animationSpec = spring(
+                            dampingRatio = 0.7f,
+                            stiffness = 380f
+                        )
+                    )
+                }
+            }
+            delay(entryStaggerMs * visibleItems.size.coerceAtLeast(3) + 600)
+            isInitialLoad = false
+        }
+    }
 
     Box(
         modifier = modifier.fillMaxSize(),
         contentAlignment = BiasAlignment(0f, -0.1f)
     ) {
-        // 从底往顶逆序渲染，保证顶层卡片盖在最上面
         for (index in visibleItems.indices.reversed()) {
             val item = visibleItems[index]
             val isTopCard = index == 0
+            val entranceTranslationY = if (isInitialLoad) cardEntryOffsets.getOrElse(index) { Animatable(0f) }.value else 0f
+            val entranceRotation = if (isInitialLoad) cardEntryRotations.getOrElse(index) { Animatable(0f) }.value else 0f
+            val isEntryAnimating = isInitialLoad && entranceTranslationY != 0f
 
-            StackCardItem(
-                item = item,
-                stackIndex = index,
-                isTopCard = isTopCard,
-                undoAnimationTarget = if (isTopCard) undoAnimationTarget else null,
-                onSwipeLeft = { onSwipeLeft(item) },
-                onSwipeRight = { onSwipeRight(item) },
-                onSwipeUp = { onSwipeUp(item) },
-                onDetail = { onDetail(item) },
-                onLongClick = { onLongClick(item) },
-                onClearUndoAnimation = onClearUndoAnimation
-            )
+            key(item.id) {
+                Box(
+                    modifier = Modifier.graphicsLayer {
+                        translationY = entranceTranslationY
+                        rotationZ = entranceRotation
+                    }
+                ) {
+                    StackCardItem(
+                        item = item,
+                        stackIndex = index,
+                        isTopCard = isTopCard,
+                        isEntryAnimating = isEntryAnimating,
+                        undoAnimationTarget = if (isTopCard) undoAnimationTarget else null,
+                        onDragOffsetChange = if (isTopCard) onDragOffsetChange else null,
+                        onSwipeLeft = {
+                            onDragOffsetChange?.invoke(Offset.Zero)
+                            onSwipeLeft(item)
+                        },
+                        onSwipeRight = {
+                            onDragOffsetChange?.invoke(Offset.Zero)
+                            onSwipeRight(item)
+                        },
+                        onSwipeUp = {
+                            onDragOffsetChange?.invoke(Offset.Zero)
+                            onSwipeUp(item)
+                        },
+                        onDetail = { onDetail(item) },
+                        onLongClick = { onLongClick(item) },
+                        onClearUndoAnimation = onClearUndoAnimation
+                    )
+                }
+            }
         }
     }
 }
@@ -119,7 +200,9 @@ private fun StackCardItem(
     item: MediaItem,
     stackIndex: Int,
     isTopCard: Boolean,
+    isEntryAnimating: Boolean = false,
     undoAnimationTarget: UndoAnimationTarget?,
+    onDragOffsetChange: ((Offset) -> Unit)? = null,
     onSwipeLeft: () -> Unit,
     onSwipeRight: () -> Unit,
     onSwipeUp: () -> Unit,
@@ -154,6 +237,7 @@ private fun StackCardItem(
     val currentOnSwipeRight by rememberUpdatedState(onSwipeRight)
     val currentOnSwipeUp by rememberUpdatedState(onSwipeUp)
     val currentOnClearUndoAnimation by rememberUpdatedState(onClearUndoAnimation)
+    val currentOnDragOffsetChange by rememberUpdatedState(onDragOffsetChange)
 
     val effectiveStackIndex = stackIndex.coerceAtMost(2)
     val targetScale = 1f - (effectiveStackIndex * 0.04f)
@@ -218,8 +302,8 @@ private fun StackCardItem(
                 shape = RoundedCornerShape(24.dp)
             )
             .clip(RoundedCornerShape(24.dp))
-            .pointerInput(isTopCard, isExpanded) {
-                if (!isTopCard || isExpanded) return@pointerInput
+            .pointerInput(isTopCard, isExpanded, isEntryAnimating) {
+                if (!isTopCard || isExpanded || isEntryAnimating) return@pointerInput
                 val velocityTracker = VelocityTracker()
 
                 detectDragGestures(
@@ -229,6 +313,7 @@ private fun StackCardItem(
                     },
                     onDragCancel = {
                         isPressed = false
+                        currentOnDragOffsetChange?.invoke(Offset.Zero)
                         scope.launch {
                             launch { offsetX.animateTo(0f, spring(stiffness = 2000f, dampingRatio = 0.85f)) }
                             launch { offsetY.animateTo(0f, spring(stiffness = 2000f, dampingRatio = 0.85f)) }
@@ -236,6 +321,7 @@ private fun StackCardItem(
                     },
                     onDragEnd = {
                         isPressed = false
+                        currentOnDragOffsetChange?.invoke(Offset.Zero)
                         val velocity = velocityTracker.calculateVelocity()
                         val velocityY = velocity.y
                         val threshold = 160f
@@ -271,8 +357,11 @@ private fun StackCardItem(
                         velocityTracker.addPosition(change.uptimeMillis, change.position)
                         change.consume()
                         scope.launch {
-                            offsetX.snapTo(offsetX.value + dragAmount.x)
-                            offsetY.snapTo(offsetY.value + dragAmount.y)
+                            val newX = offsetX.value + dragAmount.x
+                            val newY = offsetY.value + dragAmount.y
+                            offsetX.snapTo(newX)
+                            offsetY.snapTo(newY)
+                            currentOnDragOffsetChange?.invoke(Offset(newX, newY))
                         }
                     }
                 )
@@ -373,5 +462,79 @@ private fun ActionBadge(
                 letterSpacing = 1.sp
             )
         }
+    }
+}
+
+@Composable
+internal fun BoxScope.EdgeGlowEffects(
+    offset: Offset,
+    isUndoAnimating: Boolean
+) {
+    if (offset == Offset.Zero || isUndoAnimating) return
+
+    val threshold = 200f
+    val dragX = offset.x
+    val dragY = offset.y
+    val absX = kotlin.math.abs(dragX)
+    val absY = kotlin.math.abs(dragY)
+
+    val isHorizontal = absX > absY
+    val isVertical = absY > absX
+
+    val maxOpacity = 0.6f
+    val fadeScale = 2f
+    val tX = (absX / (threshold * fadeScale)).coerceIn(0f, 1f)
+    val easedX = tX * tX * (3f - 2f * tX)
+    val tY = (absY / (threshold * fadeScale)).coerceIn(0f, 1f)
+    val easedY = tY * tY * (3f - 2f * tY)
+
+    if (isHorizontal && dragX > 0) {
+        val opacity = easedX * maxOpacity
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterEnd)
+                .fillMaxHeight()
+                .fillMaxWidth(0.8f)
+                .graphicsLayer { alpha = opacity }
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            Color.Transparent,
+                            ReliveOrange.copy(alpha = 0.9f)
+                        )
+                    )
+                )
+        )
+    } else if (isHorizontal && dragX < 0) {
+        val opacity = easedX * maxOpacity
+        Box(
+            modifier = Modifier
+                .align(Alignment.CenterStart)
+                .fillMaxHeight()
+                .fillMaxWidth(0.8f)
+                .graphicsLayer { alpha = opacity }
+                .background(
+                    brush = Brush.horizontalGradient(
+                        colors = listOf(
+                            ReliveRed500.copy(alpha = 0.9f),
+                            Color.Transparent
+                        )
+                    )
+                )
+        )
+    } else if (isVertical && dragY < 0) {
+        val opacity = easedY * maxOpacity
+        Box(
+            modifier = Modifier
+                .align(Alignment.TopCenter)
+                .fillMaxWidth()
+                .fillMaxHeight(0.4f)
+                .graphicsLayer { alpha = opacity }
+                .background(
+                    brush = Brush.verticalGradient(
+                        colors = listOf(ReliveBlue500, Color.Transparent)
+                    )
+                )
+        )
     }
 }

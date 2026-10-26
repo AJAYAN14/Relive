@@ -16,9 +16,6 @@ import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
-import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -84,22 +81,6 @@ internal fun StatsRoute(
                     .statusBarsPadding()
                     .padding(top = 12.dp, start = 16.dp, end = 16.dp, bottom = 12.dp)
             ) {
-                Box(
-                    modifier = Modifier
-                        .size(40.dp)
-                        .align(Alignment.CenterStart)
-                        .clip(CircleShape)
-                        .background(ReliveBlack.copy(alpha = 0.05f))
-                        .bounceClick(onClick = onBack),
-                    contentAlignment = Alignment.Center
-                ) {
-                    Icon(
-                        imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                        contentDescription = stringResource(R.string.stats_back),
-                        tint = ReliveBlack
-                    )
-                }
-
                 Text(
                     text = stringResource(R.string.stats_title),
                     fontSize = 20.sp,

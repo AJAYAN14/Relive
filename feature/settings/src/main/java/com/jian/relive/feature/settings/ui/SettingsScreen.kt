@@ -19,7 +19,6 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.automirrored.outlined.ArrowBack
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.ChevronRight
 import androidx.compose.material3.AlertDialog
@@ -50,7 +49,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.platform.LocalLayoutDirection
-import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.LayoutDirection
@@ -63,6 +61,7 @@ import com.jian.relive.core.ui.composition.LocalHapticsEnabled
 import com.jian.relive.core.ui.theme.ReliveBlack
 import com.jian.relive.core.ui.theme.ReliveGray100
 import com.jian.relive.core.ui.theme.ReliveGray500
+import com.jian.relive.core.ui.theme.RelivePrimary
 import com.jian.relive.core.ui.theme.ReliveWhite
 import com.jian.relive.feature.settings.R
 import kotlinx.coroutines.delay
@@ -89,16 +88,15 @@ fun SettingsScreen(
     onAvatarChange: (String) -> Unit,
     onReleaseKept: () -> Unit,
     onLanguageClick: () -> Unit,
-    onPrivacyClick: () -> Unit,
-    onOpenSourceClick: () -> Unit,
-    onBack: () -> Unit,
+    onPrivacyClick: () -> Unit = {},
+    onOpenSourceClick: () -> Unit = {},
+    onBack: () -> Unit = {},
     modifier: Modifier = Modifier
 ) {
     val scope = rememberCoroutineScope()
     val haptic = LocalHapticFeedback.current
     val hapticsAllowed = LocalHapticsEnabled.current
     val layoutDirection = LocalLayoutDirection.current
-    val uriHandler = LocalUriHandler.current
 
     var releasedMessageVisible by remember { mutableStateOf(false) }
     var showReleaseDialog by remember { mutableStateOf(false) }
@@ -129,7 +127,7 @@ fun SettingsScreen(
                 ) {
                     Text(
                         text = stringResource(R.string.settings_confirm),
-                        color = ReliveBlack,
+                        color = RelivePrimary,
                         fontWeight = FontWeight.Bold
                     )
                 }
@@ -159,29 +157,12 @@ fun SettingsScreen(
                 .statusBarsPadding()
                 .padding(top = 12.dp, start = 16.dp, bottom = 16.dp)
         ) {
-            IconButton(
-                onClick = onBack,
-                modifier = Modifier
-                    .align(Alignment.CenterStart)
-                    .bounceClick(onClick = onBack)
-                    .clip(CircleShape)
-                    .background(ReliveBlack.copy(alpha = 0.05f))
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Outlined.ArrowBack,
-                    contentDescription = stringResource(R.string.settings_back),
-                    tint = ReliveBlack
-                )
-            }
-
             Text(
                 text = stringResource(R.string.settings_title),
                 fontSize = 20.sp,
                 fontWeight = FontWeight.Bold,
                 color = ReliveBlack,
-                modifier = Modifier
-                    .align(Alignment.Center)
-                    .padding(horizontal = 56.dp)
+                modifier = Modifier.align(Alignment.Center)
             )
         }
 
@@ -226,43 +207,6 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            Text(
-                text = stringResource(R.string.settings_privacy_policy),
-                fontSize = 18.sp,
-                fontWeight = FontWeight.Bold,
-                color = ReliveBlack,
-                modifier = Modifier.then(staggeredRevealModifier(2))
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clip(RoundedCornerShape(16.dp))
-                    .background(ReliveGray100)
-                    .bounceClick(onClick = {
-                        if (hapticsAllowed) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
-                        onPrivacyClick()
-                    })
-                    .then(staggeredRevealModifier(3))
-                    .padding(16.dp),
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = stringResource(R.string.settings_privacy_policy),
-                    fontSize = 16.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = ReliveBlack
-                )
-                Spacer(modifier = Modifier.weight(1f))
-                Icon(
-                    imageVector = Icons.Outlined.ChevronRight,
-                    contentDescription = null,
-                    tint = ReliveGray500
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
 
             Row(
                 modifier = Modifier
@@ -286,7 +230,7 @@ fun SettingsScreen(
                     },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = ReliveWhite,
-                        checkedTrackColor = ReliveBlack,
+                        checkedTrackColor = RelivePrimary,
                         uncheckedThumbColor = ReliveWhite,
                         uncheckedTrackColor = ReliveGray500.copy(alpha = 0.3f)
                     )
@@ -317,7 +261,7 @@ fun SettingsScreen(
                     },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = ReliveWhite,
-                        checkedTrackColor = ReliveBlack,
+                        checkedTrackColor = RelivePrimary,
                         uncheckedThumbColor = ReliveWhite,
                         uncheckedTrackColor = ReliveGray500.copy(alpha = 0.3f)
                     )
@@ -348,7 +292,7 @@ fun SettingsScreen(
                     },
                     colors = SwitchDefaults.colors(
                         checkedThumbColor = ReliveWhite,
-                        checkedTrackColor = ReliveBlack,
+                        checkedTrackColor = RelivePrimary,
                         uncheckedThumbColor = ReliveWhite,
                         uncheckedTrackColor = ReliveGray500.copy(alpha = 0.3f)
                     )
@@ -394,8 +338,8 @@ fun SettingsScreen(
                         valueRange = 10f..30f,
                         steps = 19,
                         colors = SliderDefaults.colors(
-                            thumbColor = ReliveBlack,
-                            activeTrackColor = ReliveBlack,
+                            thumbColor = RelivePrimary,
+                            activeTrackColor = RelivePrimary,
                             inactiveTrackColor = ReliveGray500.copy(alpha = 0.3f)
                         )
                     )
@@ -427,7 +371,7 @@ fun SettingsScreen(
                     },
                     label = { Text(stringResource(R.string.settings_order_random)) },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = ReliveBlack,
+                        selectedContainerColor = RelivePrimary,
                         selectedLabelColor = ReliveWhite,
                         containerColor = ReliveGray100,
                         labelColor = ReliveBlack
@@ -447,7 +391,7 @@ fun SettingsScreen(
                     },
                     label = { Text(stringResource(R.string.settings_order_time)) },
                     colors = FilterChipDefaults.filterChipColors(
-                        selectedContainerColor = ReliveBlack,
+                        selectedContainerColor = RelivePrimary,
                         selectedLabelColor = ReliveWhite,
                         containerColor = ReliveGray100,
                         labelColor = ReliveBlack
@@ -486,7 +430,7 @@ fun SettingsScreen(
                         },
                         label = { Text(stringResource(R.string.settings_avatar_girl)) },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = ReliveBlack,
+                            selectedContainerColor = RelivePrimary,
                             selectedLabelColor = ReliveWhite,
                             containerColor = ReliveGray100,
                             labelColor = ReliveBlack
@@ -506,7 +450,7 @@ fun SettingsScreen(
                         },
                         label = { Text(stringResource(R.string.settings_avatar_boy)) },
                         colors = FilterChipDefaults.filterChipColors(
-                            selectedContainerColor = ReliveBlack,
+                            selectedContainerColor = RelivePrimary,
                             selectedLabelColor = ReliveWhite,
                             containerColor = ReliveGray100,
                             labelColor = ReliveBlack
@@ -550,7 +494,7 @@ fun SettingsScreen(
                     if (hapticsAllowed) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                     showReleaseDialog = true
                 },
-                colors = ButtonDefaults.buttonColors(containerColor = ReliveBlack),
+                colors = ButtonDefaults.buttonColors(containerColor = RelivePrimary),
                 shape = RoundedCornerShape(12.dp),
                 modifier = Modifier
                     .fillMaxWidth()
@@ -577,69 +521,7 @@ fun SettingsScreen(
                 }
             }
 
-            Spacer(modifier = Modifier.height(48.dp))
-
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(horizontal = 16.dp)
-                    .then(staggeredRevealModifier(16)),
-                horizontalArrangement = Arrangement.Center
-            ) {
-                TextButton(onClick = {
-                    uriHandler.openUri("https://itlueqqx8t.feishu.cn/wiki/TOCQw5y08iJQ1FkOAKYcnJEWnlf")
-                }) {
-                    Text(
-                        text = stringResource(R.string.settings_terms_of_service),
-                        fontSize = 12.sp,
-                        color = ReliveGray500
-                    )
-                }
-
-                Spacer(modifier = Modifier.width(16.dp))
-
-                TextButton(onClick = {
-                    uriHandler.openUri("https://itlueqqx8t.feishu.cn/wiki/NiG9wQ3LTigcGokeBHEcHvIjngd")
-                }) {
-                    Text(
-                        text = stringResource(R.string.settings_privacy_policy),
-                        fontSize = 12.sp,
-                        color = ReliveGray500
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .then(staggeredRevealModifier(17)),
-                contentAlignment = Alignment.Center
-            ) {
-                TextButton(onClick = onOpenSourceClick) {
-                    Text(
-                        text = stringResource(R.string.settings_open_source_licenses),
-                        fontSize = 12.sp,
-                        color = ReliveGray500
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(8.dp))
-
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .then(staggeredRevealModifier(18)),
-                contentAlignment = Alignment.Center
-            ) {
-                Text(
-                    text = "${stringResource(R.string.settings_version)} 2.0  ${stringResource(R.string.settings_copyright)} 2026",
-                    fontSize = 12.sp,
-                    color = ReliveGray500.copy(alpha = 0.5f)
-                )
-            }
+            Spacer(modifier = Modifier.height(32.dp))
 
             Spacer(
                 modifier = Modifier

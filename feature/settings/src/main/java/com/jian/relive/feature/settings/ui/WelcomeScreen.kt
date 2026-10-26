@@ -73,6 +73,7 @@ import com.jian.relive.core.ui.theme.ReliveBlueSky600
 import com.jian.relive.core.ui.theme.ReliveGray100
 import com.jian.relive.core.ui.theme.ReliveGray200
 import com.jian.relive.core.ui.theme.ReliveGray500
+import com.jian.relive.core.ui.theme.RelivePrimary
 import com.jian.relive.core.ui.theme.ReliveGray600
 import com.jian.relive.core.ui.theme.ReliveGray900
 import com.jian.relive.core.ui.theme.ReliveGreen100
@@ -225,7 +226,7 @@ fun WelcomeScreen(
                     }
                 },
                 enabled = isLast || canContinue,
-                colors = ButtonDefaults.buttonColors(containerColor = ReliveGray900),
+                colors = ButtonDefaults.buttonColors(containerColor = RelivePrimary),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier
                     .height(44.dp)
@@ -604,7 +605,7 @@ private fun WelcomePermissionStep(
                 },
                 enabled = !hasPermission || showManageStorage,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = if (!hasPermission || showManageStorage) ReliveGray900 else ReliveGray200
+                    containerColor = if (!hasPermission || showManageStorage) RelivePrimary else ReliveGray200
                 ),
                 shape = RoundedCornerShape(16.dp),
                 modifier = Modifier

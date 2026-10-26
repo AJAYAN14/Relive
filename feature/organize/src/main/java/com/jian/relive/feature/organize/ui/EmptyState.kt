@@ -55,6 +55,7 @@ import com.jian.relive.core.ui.theme.ReliveBlack
 import com.jian.relive.core.ui.theme.ReliveGray100
 import com.jian.relive.core.ui.theme.ReliveGray500
 import com.jian.relive.core.ui.theme.ReliveGreen500
+import com.jian.relive.core.ui.theme.RelivePrimary
 import com.jian.relive.core.ui.theme.ReliveWhite
 import com.jian.relive.feature.organize.R
 import kotlinx.coroutines.delay
@@ -222,7 +223,7 @@ fun EmptyState(
                 if (isTrulyDone) {
                     Button(
                         onClick = { showReleaseDialog = true },
-                        colors = ButtonDefaults.buttonColors(containerColor = ReliveBlack),
+                        colors = ButtonDefaults.buttonColors(containerColor = RelivePrimary),
                         shape = RoundedCornerShape(24.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
@@ -283,7 +284,7 @@ fun EmptyState(
                                 onRestart()
                             }
                         },
-                        colors = ButtonDefaults.buttonColors(containerColor = ReliveBlack),
+                        colors = ButtonDefaults.buttonColors(containerColor = RelivePrimary),
                         shape = RoundedCornerShape(24.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {

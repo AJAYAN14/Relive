@@ -34,7 +34,7 @@ import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.jian.relive.core.model.MediaItem
 import com.jian.relive.core.ui.component.PredictiveBackWrapper
-import com.jian.relive.core.ui.theme.ReliveBlack
+import com.jian.relive.core.ui.theme.ReliveWhite
 import com.jian.relive.feature.feed.ui.FeedActionsColumn
 import com.jian.relive.feature.feed.ui.FeedDeleteConfirmDialog
 import com.jian.relive.feature.feed.ui.FeedEmptyView
@@ -136,7 +136,7 @@ internal fun FeedRoute(
         Box(
             modifier = modifier
                 .fillMaxSize()
-                .background(ReliveBlack)
+                .background(ReliveWhite)
         ) {
             if (uiState.feedItems.isEmpty()) {
                 FeedEmptyView(

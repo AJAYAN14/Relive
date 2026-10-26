@@ -32,6 +32,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.CheckCircle
+import androidx.compose.material.icons.outlined.Close
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.FilterList
 import androidx.compose.material.icons.outlined.Folder
@@ -53,11 +54,13 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.geometry.Rect
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -70,10 +73,12 @@ import com.jian.relive.core.model.UndoAction
 import com.jian.relive.core.ui.animation.bounceClick
 import com.jian.relive.core.ui.component.FullScreenImageViewer
 import com.jian.relive.core.ui.component.PredictiveBackWrapper
+import com.jian.relive.core.ui.component.SlideText
 import com.jian.relive.core.ui.theme.ReliveBlack
 import com.jian.relive.core.ui.theme.ReliveGray100
 import com.jian.relive.core.ui.theme.ReliveGray500
 import com.jian.relive.core.ui.theme.ReliveGreen500
+import com.jian.relive.core.ui.theme.RelivePrimary
 import com.jian.relive.core.ui.theme.ReliveRed200
 import com.jian.relive.core.ui.theme.ReliveRed50
 import com.jian.relive.core.ui.theme.ReliveRed600
@@ -87,6 +92,7 @@ import com.jian.relive.feature.organize.ui.FolderDropRow
 import com.jian.relive.feature.organize.ui.MonthlyListView
 import com.jian.relive.feature.organize.ui.MonthlyReviewView
 import com.jian.relive.feature.organize.ui.OrganizeCardStack
+import com.jian.relive.feature.organize.ui.EdgeGlowEffects
 import com.jian.relive.core.ui.sound.rememberSoundEffectHelper
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -198,6 +204,7 @@ internal fun OrganizeScreen(
                                 viewModel.loadNextBatch(playEntryAnimation = true)
                             },
                             onOpenFilter = { currentOverlay = OrganizeOverlay.FILTER },
+                            onResetFilter = { viewModel.applyFilter("All", "All", "All") },
                             onOpenMonthly = { currentOverlay = OrganizeOverlay.MONTHLY_LIST },
                             onOpenTrash = { currentOverlay = OrganizeOverlay.DELETE_REVIEW },
                             onOpenDeepOrganize = { currentOverlay = OrganizeOverlay.DEEP_ORGANIZE },
@@ -397,7 +404,7 @@ internal fun OrganizeScreen(
                                 newFolderName = ""
                                 pendingMoveItem = null
                             },
-                            colors = ButtonDefaults.buttonColors(containerColor = ReliveBlack)
+                            colors = ButtonDefaults.buttonColors(containerColor = RelivePrimary)
                         ) {
                             Text(stringResource(R.string.organize_create), color = ReliveWhite)
                         }
@@ -439,9 +446,10 @@ private fun MainOrganizeContent(
     onUndo: () -> Unit,
     onLoadNextBatch: () -> Unit,
     onOpenFilter: () -> Unit,
+    onResetFilter: () -> Unit = {},
     onOpenMonthly: () -> Unit,
     onOpenTrash: () -> Unit,
-    onOpenDeepOrganize: () -> Unit,
+    onOpenDeepOrganize: () -> Unit = {},
     onNavigateToStats: () -> Unit,
     onNavigateToLikes: () -> Unit,
     onReleaseKept: () -> Unit,
@@ -451,8 +459,14 @@ private fun MainOrganizeContent(
     var isFolderDropMode by remember { mutableStateOf(false) }
     var activeDropTargetId by remember { mutableStateOf<String?>(null) }
     var folderPositions by remember { mutableStateOf<Map<String, Rect>>(emptyMap()) }
+    var topCardOffset by remember { mutableStateOf(Offset.Zero) }
 
     Box(modifier = Modifier.fillMaxSize()) {
+        EdgeGlowEffects(
+            offset = topCardOffset,
+            isUndoAnimating = uiState.isUndoAnimating
+        )
+
         Column(modifier = Modifier.fillMaxSize()) {
             Box(
                 modifier = Modifier
@@ -460,50 +474,80 @@ private fun MainOrganizeContent(
                     .statusBarsPadding()
                     .padding(top = 12.dp, start = 20.dp, end = 20.dp, bottom = 12.dp)
             ) {
-                IconButton(
-                    onClick = onNavigateToStats,
-                    modifier = Modifier
-                        .align(Alignment.CenterStart)
-                        .clip(CircleShape)
-                        .background(ReliveGray100)
-                ) {
-                    Icon(
-                        imageVector = Icons.Outlined.Folder,
-                        contentDescription = stringResource(R.string.organize_current_folder),
-                        tint = ReliveBlack
-                    )
-                }
+                if (uiState.displayMedia.isNotEmpty()) {
+                    val denominator = uiState.currentBatchTotal
+                    val remaining = uiState.displayMedia.size
+                    val done = (denominator - remaining).coerceAtLeast(0)
 
-                Row(
-                    modifier = Modifier
-                        .align(Alignment.Center)
-                        .clip(RoundedCornerShape(20.dp))
-                        .background(ReliveGray100)
-                        .bounceClick(onClick = onOpenFilter)
-                        .padding(horizontal = 16.dp, vertical = 8.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    val filterSummary = buildString {
-                        append(if (uiState.filterFolder == "All") stringResource(R.string.organize_filter_all) else uiState.filterFolder)
-                        if (uiState.filterMonth != "All") {
-                            append(" • ")
-                            append(uiState.filterMonth)
+                    Column(
+                        modifier = Modifier.align(Alignment.Center),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Row(verticalAlignment = Alignment.CenterVertically) {
+                            SlideText(
+                                targetValue = done,
+                                style = androidx.compose.ui.text.TextStyle(
+                                    fontSize = 16.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    fontFamily = FontFamily.Monospace
+                                ),
+                                color = ReliveBlack.copy(alpha = 0.6f)
+                            )
+                            Text(
+                                text = " / $denominator",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = ReliveBlack.copy(alpha = 0.6f),
+                                fontFamily = FontFamily.Monospace
+                            )
+                        }
+
+                        if (uiState.filterFolder != "All" || uiState.filterType != "All" || uiState.filterMonth != "All") {
+                            Spacer(modifier = Modifier.height(6.dp))
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier
+                                    .clip(RoundedCornerShape(16.dp))
+                                    .background(ReliveGray100)
+                                    .bounceClick(onClick = onResetFilter)
+                                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                            ) {
+                                val textList = mutableListOf<String>()
+                                if (uiState.filterFolder != "All") textList.add(uiState.filterFolder)
+                                if (uiState.filterType != "All") {
+                                    textList.add(
+                                        when (uiState.filterType) {
+                                            "Image" -> stringResource(R.string.organize_filter_image)
+                                            "Video" -> stringResource(R.string.organize_filter_video)
+                                            "Live" -> stringResource(R.string.organize_filter_live)
+                                            else -> uiState.filterType
+                                        }
+                                    )
+                                }
+                                if (uiState.filterMonth != "All") textList.add(uiState.filterMonth)
+
+                                Text(
+                                    text = textList.joinToString(" • "),
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Medium,
+                                    color = ReliveBlack.copy(alpha = 0.6f),
+                                    maxLines = 1,
+                                    overflow = TextOverflow.Ellipsis
+                                )
+                                Spacer(Modifier.width(4.dp))
+                                Icon(
+                                    imageVector = Icons.Outlined.Close,
+                                    contentDescription = null,
+                                    tint = ReliveBlack.copy(alpha = 0.6f),
+                                    modifier = Modifier.size(12.dp)
+                                )
+                            }
                         }
                     }
-                    Text(
-                        text = filterSummary,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = ReliveBlack
-                    )
                 }
 
-                Row(
-                    modifier = Modifier.align(Alignment.CenterEnd),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.spacedBy(8.dp)
-                ) {
-                    if (uiState.pendingTrashCount > 0) {
+                Box(modifier = Modifier.align(Alignment.CenterEnd)) {
+                    androidx.compose.animation.AnimatedVisibility(visible = uiState.pendingTrashCount > 0) {
                         Button(
                             onClick = onOpenTrash,
                             colors = ButtonDefaults.buttonColors(containerColor = ReliveRed50),
@@ -518,52 +562,15 @@ private fun MainOrganizeContent(
                                 modifier = Modifier.size(16.dp)
                             )
                             Spacer(Modifier.width(4.dp))
-                            Text(
-                                text = uiState.pendingTrashCount.toString(),
-                                color = ReliveRed600,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold
+                            SlideText(
+                                targetValue = uiState.pendingTrashCount,
+                                style = androidx.compose.ui.text.TextStyle(
+                                    fontSize = 12.sp,
+                                    fontWeight = FontWeight.Bold
+                                ),
+                                color = ReliveRed600
                             )
                         }
-                    }
-
-                    IconButton(
-                        onClick = onOpenDeepOrganize,
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(ReliveGray100)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.AutoAwesome,
-                            contentDescription = stringResource(R.string.organize_deep_title),
-                            tint = ReliveBlack
-                        )
-                    }
-
-                    IconButton(
-                        onClick = onOpenMonthly,
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(ReliveGray100)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.CalendarMonth,
-                            contentDescription = stringResource(R.string.organize_monthly_title),
-                            tint = ReliveBlack
-                        )
-                    }
-
-                    IconButton(
-                        onClick = onOpenFilter,
-                        modifier = Modifier
-                            .clip(CircleShape)
-                            .background(ReliveGray100)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.FilterList,
-                            contentDescription = stringResource(R.string.organize_filter_title),
-                            tint = ReliveBlack
-                        )
                     }
                 }
             }
@@ -596,7 +603,8 @@ private fun MainOrganizeContent(
                         onSwipeRight = onSwipeRight,
                         onSwipeUp = onSwipeUp,
                         onLongClick = onCardLongClick,
-                        onClearUndoAnimation = onClearUndoAnimation
+                        onClearUndoAnimation = onClearUndoAnimation,
+                        onDragOffsetChange = { topCardOffset = it }
                     )
                 }
             }
@@ -614,13 +622,10 @@ private fun MainOrganizeContent(
                 .padding(bottom = 80.dp)
         )
 
-        Row(
+        Box(
             modifier = Modifier
-                .align(Alignment.BottomCenter)
-                .padding(bottom = 24.dp, start = 20.dp, end = 20.dp)
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
+                .align(Alignment.BottomStart)
+                .padding(bottom = 24.dp, start = 20.dp)
         ) {
             if (uiState.comboCount > 1) {
                 Box(
@@ -636,10 +641,14 @@ private fun MainOrganizeContent(
                         fontWeight = FontWeight.Bold
                     )
                 }
-            } else {
-                Spacer(modifier = Modifier.size(1.dp))
             }
+        }
 
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 24.dp)
+        ) {
             AnimatedVisibility(
                 visible = uiState.canUndo,
                 enter = fadeIn() + slideInVertically { it / 2 },
@@ -665,6 +674,34 @@ private fun MainOrganizeContent(
                         color = ReliveBlack.copy(alpha = 0.7f),
                         fontSize = 12.sp,
                         fontWeight = FontWeight.Medium
+                    )
+                }
+            }
+        }
+
+        Box(
+            modifier = Modifier
+                .align(Alignment.BottomEnd)
+                .padding(bottom = 24.dp, end = 20.dp)
+        ) {
+            AnimatedVisibility(
+                visible = !isFolderDropMode,
+                enter = fadeIn() + slideInVertically { it / 2 },
+                exit = fadeOut() + slideOutVertically { it / 2 }
+            ) {
+                Button(
+                    onClick = onOpenFilter,
+                    colors = ButtonDefaults.buttonColors(containerColor = ReliveWhite.copy(alpha = 0.95f)),
+                    shape = RoundedCornerShape(24.dp),
+                    elevation = ButtonDefaults.buttonElevation(defaultElevation = 2.dp),
+                    border = androidx.compose.foundation.BorderStroke(1.dp, ReliveBlack.copy(alpha = 0.1f)),
+                    contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 16.dp, vertical = 8.dp)
+                ) {
+                    Icon(
+                        imageVector = Icons.Outlined.FilterList,
+                        contentDescription = stringResource(R.string.organize_filter_title),
+                        tint = ReliveBlack.copy(alpha = 0.7f),
+                        modifier = Modifier.size(16.dp)
                     )
                 }
             }

@@ -52,6 +52,14 @@ class FeedViewModel(
     private var volumeToastJob: Job? = null
 
     init {
+        viewModelScope.launch {
+            mediaRepository.mediaItems.collect { items ->
+                if (items.isNotEmpty()) {
+                    cachedAllMedia = items
+                    applyFilter()
+                }
+            }
+        }
         loadMedia()
     }
 

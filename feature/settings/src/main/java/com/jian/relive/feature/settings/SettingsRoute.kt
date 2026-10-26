@@ -13,8 +13,6 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.jian.relive.feature.settings.ui.LanguageScreen
-import com.jian.relive.feature.settings.ui.OpenSourceLicensesScreen
-import com.jian.relive.feature.settings.ui.PrivacyScreen
 import com.jian.relive.feature.settings.ui.SettingsScreen
 import com.jian.relive.feature.settings.ui.WelcomeScreen
 import kotlinx.serialization.Serializable
@@ -31,17 +29,6 @@ data object SettingsRoute
 @Serializable
 data object LanguageRoute
 
-/**
- * 隐私政策页面路由契约。
- */
-@Serializable
-data object PrivacyRoute
-
-/**
- * 开源许可页面路由契约。
- */
-@Serializable
-data object OpenSourceLicensesRoute
 
 /**
  * 首次欢迎引导流程路由契约。
@@ -55,9 +42,7 @@ data object WelcomeRoute
 fun NavGraphBuilder.settingsGraph(
     viewModel: SettingsViewModel,
     onNavigateToLanguage: () -> Unit,
-    onNavigateToPrivacy: () -> Unit,
-    onNavigateToOpenSource: () -> Unit,
-    onBack: () -> Unit,
+    onBack: () -> Unit = {},
     hasPermission: Boolean = true,
     onRequestPermission: () -> Unit = {},
     hasManageStorage: Boolean = true,
@@ -82,8 +67,6 @@ fun NavGraphBuilder.settingsGraph(
             onAvatarChange = viewModel::setAvatarType,
             onReleaseKept = viewModel::releaseKeptPhotos,
             onLanguageClick = onNavigateToLanguage,
-            onPrivacyClick = onNavigateToPrivacy,
-            onOpenSourceClick = onNavigateToOpenSource,
             onBack = onBack
         )
     }
@@ -100,13 +83,6 @@ fun NavGraphBuilder.settingsGraph(
         )
     }
 
-    composable<PrivacyRoute> {
-        PrivacyScreen(onBack = onBack)
-    }
-
-    composable<OpenSourceLicensesRoute> {
-        OpenSourceLicensesScreen(onBack = onBack)
-    }
 
     composable<WelcomeRoute> {
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
@@ -130,8 +106,6 @@ fun NavGraphBuilder.settingsGraph(
  */
 fun NavGraphBuilder.settingsScreen(
     onNavigateToLanguage: () -> Unit = {},
-    onNavigateToPrivacy: () -> Unit = {},
-    onNavigateToOpenSource: () -> Unit = {},
     onBack: () -> Unit = {}
 ) {
     composable<SettingsRoute> {
@@ -153,8 +127,6 @@ fun NavGraphBuilder.settingsScreen(
             onAvatarChange = viewModel::setAvatarType,
             onReleaseKept = viewModel::releaseKeptPhotos,
             onLanguageClick = onNavigateToLanguage,
-            onPrivacyClick = onNavigateToPrivacy,
-            onOpenSourceClick = onNavigateToOpenSource,
             onBack = onBack
         )
     }

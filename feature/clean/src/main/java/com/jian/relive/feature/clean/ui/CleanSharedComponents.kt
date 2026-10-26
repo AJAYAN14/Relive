@@ -46,6 +46,7 @@ import com.jian.relive.core.ui.theme.ReliveGray200
 import com.jian.relive.core.ui.theme.ReliveGray400
 import com.jian.relive.core.ui.theme.ReliveGray600
 import com.jian.relive.core.ui.theme.ReliveGreenLight
+import com.jian.relive.core.ui.theme.RelivePrimary
 import com.jian.relive.core.ui.theme.ReliveRed600
 import com.jian.relive.core.ui.theme.ReliveWhite
 import com.jian.relive.feature.clean.R
@@ -107,7 +108,7 @@ fun CleanEmptyStateView(
 
             Button(
                 onClick = onDoneClick,
-                colors = ButtonDefaults.buttonColors(containerColor = ReliveBlack),
+                colors = ButtonDefaults.buttonColors(containerColor = RelivePrimary),
                 shape = RoundedCornerShape(28.dp),
                 modifier = Modifier
                     .height(48.dp)

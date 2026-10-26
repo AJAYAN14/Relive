@@ -7,8 +7,10 @@ import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
 
 private val ReliveDarkColorScheme = darkColorScheme(
-    primary = ReliveWhite,
+    primary = RelivePrimaryLight,
     onPrimary = ReliveBlack,
+    primaryContainer = RelivePrimary,
+    onPrimaryContainer = ReliveWhite,
     secondary = ReliveGray400,
     onSecondary = ReliveBlack,
     tertiary = ReliveBlue400,
@@ -24,8 +26,10 @@ private val ReliveDarkColorScheme = darkColorScheme(
 )
 
 private val ReliveLightColorScheme = lightColorScheme(
-    primary = ReliveGray900,
+    primary = RelivePrimary,
     onPrimary = ReliveWhite,
+    primaryContainer = RelivePrimaryContainer,
+    onPrimaryContainer = RelivePrimary,
     secondary = ReliveGray600,
     onSecondary = ReliveWhite,
     tertiary = ReliveBlue500,

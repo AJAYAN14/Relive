@@ -2,6 +2,13 @@ package com.jian.relive.core.ui.theme
 
 import androidx.compose.ui.graphics.Color
 
+/**
+ * 应用程序核心品牌主题色（Primary）。
+ */
+val RelivePrimary = Color(0xFFFF7043)
+val RelivePrimaryLight = Color(0xFFFF8A65)
+val RelivePrimaryContainer = Color(0xFFFFEBE6)
+
 val ReliveWhite = Color(0xFFFFFFFF)
 val ReliveBlack = Color(0xFF000000)
 val ReliveDarkNavBackground = Color(0xFF141417)

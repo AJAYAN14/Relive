@@ -46,6 +46,7 @@ import com.jian.relive.core.model.MediaItem
 import com.jian.relive.core.ui.animation.bounceClick
 import com.jian.relive.core.ui.theme.ReliveBlack
 import com.jian.relive.core.ui.theme.ReliveBlue500
+import com.jian.relive.core.ui.theme.RelivePrimary
 import com.jian.relive.core.ui.theme.ReliveGray100
 import com.jian.relive.core.ui.theme.ReliveGray200
 import com.jian.relive.core.ui.theme.ReliveGray400
@@ -255,7 +256,7 @@ fun SimilarPhotosSection(
                     }
                 },
                 enabled = keptId != null,
-                colors = ButtonDefaults.buttonColors(containerColor = ReliveBlack),
+                colors = ButtonDefaults.buttonColors(containerColor = RelivePrimary),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp),

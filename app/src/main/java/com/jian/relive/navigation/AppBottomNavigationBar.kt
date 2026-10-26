@@ -1,6 +1,5 @@
 package com.jian.relive.navigation
 
-import androidx.compose.animation.animateColorAsState
 import androidx.compose.animation.core.Spring
 import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.spring
@@ -42,7 +41,7 @@ import androidx.compose.ui.unit.sp
 import com.jian.relive.R
 import com.jian.relive.core.ui.animation.bounceClick
 import com.jian.relive.core.ui.theme.ReliveBlack
-import com.jian.relive.core.ui.theme.ReliveDarkNavBackground
+import com.jian.relive.core.ui.theme.RelivePrimary
 import com.jian.relive.core.ui.theme.ReliveWhite
 
 enum class MainNavTab {
@@ -66,8 +65,6 @@ fun AppBottomNavigationBar(
     hapticsEnabled: Boolean = true
 ) {
     val haptic = LocalHapticFeedback.current
-    val isDarkTheme = currentTab == MainNavTab.LIVE_FEED
-
     val tabs = listOf(
         NavTabItem(MainNavTab.ORGANIZE, Icons.Outlined.Layers, R.string.nav_organize),
         NavTabItem(MainNavTab.LIVE_FEED, Icons.Outlined.MotionPhotosOn, R.string.nav_live_feed),
@@ -75,15 +72,8 @@ fun AppBottomNavigationBar(
         NavTabItem(MainNavTab.SETTINGS, Icons.Outlined.Settings, R.string.nav_settings)
     )
 
-    val containerColor by animateColorAsState(
-        targetValue = if (isDarkTheme) ReliveDarkNavBackground.copy(alpha = 0.88f) else ReliveWhite.copy(alpha = 0.94f),
-        label = "nav_container_color"
-    )
-
-    val borderColor by animateColorAsState(
-        targetValue = if (isDarkTheme) ReliveWhite.copy(alpha = 0.12f) else ReliveBlack.copy(alpha = 0.06f),
-        label = "nav_border_color"
-    )
+    val containerColor = ReliveWhite.copy(alpha = 0.94f)
+    val borderColor = ReliveBlack.copy(alpha = 0.06f)
 
     Surface(
         modifier = modifier
@@ -92,7 +82,7 @@ fun AppBottomNavigationBar(
             .height(68.dp),
         shape = RoundedCornerShape(34.dp),
         color = containerColor,
-        shadowElevation = if (isDarkTheme) 14.dp else 8.dp,
+        shadowElevation = 8.dp,
         border = BorderStroke(width = 1.dp, color = borderColor)
     ) {
         Row(
@@ -111,18 +101,8 @@ fun AppBottomNavigationBar(
                     label = "icon_scale"
                 )
 
-                val activeBgColor = if (isDarkTheme) {
-                    ReliveWhite.copy(alpha = 0.16f)
-                } else {
-                    ReliveBlack.copy(alpha = 0.08f)
-                }
-
-                val contentColor = when {
-                    isSelected && isDarkTheme -> ReliveWhite
-                    isSelected && !isDarkTheme -> ReliveBlack
-                    !isSelected && isDarkTheme -> ReliveWhite.copy(alpha = 0.45f)
-                    else -> ReliveBlack.copy(alpha = 0.45f)
-                }
+                val activeBgColor = RelivePrimary.copy(alpha = 0.12f)
+                val contentColor = if (isSelected) RelivePrimary else ReliveBlack.copy(alpha = 0.45f)
 
                 val label = stringResource(item.labelRes)
 
