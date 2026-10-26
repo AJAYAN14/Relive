@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="compress_title">Media Compression</string>
+    <string name="compress_tab_image">Image</string>
+    <string name="compress_tab_video">Video</string>
+    <string name="compress_back">Back</string>
+
+    <!-- Image Compression Strings -->
+    <string name="compress_image_title">Image Compression</string>
+    <string name="compress_image_subtitle">Compress photos to save space</string>
+    <string name="compress_image_warning_title">Quality Notice</string>
+    <string name="compress_image_warning_body">Compression reduces quality. Try a few images first, then batch if satisfied.</string>
+    <string name="compress_image_threshold_label">Filter Threshold</string>
+    <string name="compress_image_result_title">Compression Complete</string>
+    <string name="compress_image_result_saved">Space Saved</string>
+    <string name="compress_image_result_count">Images Compressed</string>
+    <string name="compress_image_delete_original">Delete Originals</string>
+    <string name="compress_image_keep_original">Keep Originals</string>
+    <string name="compress_image_before">Before</string>
+    <string name="compress_image_after">After</string>
+    <string name="compress_image_ratio">Compression Ratio</string>
+    <string name="compress_image_action">Start Compression</string>
+    <string name="compress_image_compressing">Compressing</string>
+    <string name="compress_image_select_hint">Select images to compress</string>
+    <string name="compress_image_error">Compression failed</string>
+    <string name="compress_image_original_label">ORIGINAL</string>
+    <string name="compress_image_original_size">Keep size</string>
+    <string name="compress_image_select_all">Select Month</string>
+    <string name="compress_image_selected">All Selected</string>
+
+    <!-- Video Compression Strings -->
+    <string name="compress_video_title">Video Compression</string>
+    <string name="compress_video_subtitle">Reduce size with minimal quality loss</string>
+    <string name="compress_video_warning_title">Quality Warning</string>
+    <string name="compress_video_warning_body">Compression may slightly reduce clarity and bitrate, but most videos still look good on phones and sharing. Try a few first, then batch if you’re satisfied.</string>
+    <string name="compress_video_target_label">Target Bitrate</string>
+    <string name="compress_video_bitrate_low">Smaller</string>
+    <string name="compress_video_bitrate_balanced">Balanced</string>
+    <string name="compress_video_bitrate_high">Clearer</string>
+    <string name="compress_video_threshold_label">Filter Threshold</string>
+    <string name="compress_video_estimate">Estimated</string>
+    <string name="compress_video_times">Compressed %d times</string>
+    <string name="compress_video_result_title">Compression Complete</string>
+    <string name="compress_video_result_saved">Space Saved</string>
+    <string name="compress_video_result_count">Videos Compressed</string>
+    <string name="compress_video_delete_original">Delete Originals</string>
+    <string name="compress_video_keep_original">Keep Originals</string>
+    <string name="compress_video_before">Original</string>
+    <string name="compress_video_after">Compressed</string>
+    <string name="compress_video_ratio">Compression Ratio</string>
+    <string name="compress_video_action">Start Compression</string>
+    <string name="compress_video_compressing">Compressing</string>
+    <string name="compress_video_select_hint">Select videos to compress</string>
+    <string name="compress_video_error">Compression failed</string>
+</resources>

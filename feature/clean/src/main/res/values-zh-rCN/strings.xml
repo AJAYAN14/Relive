@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="clean_title">清理</string>
+    <string name="clean_tab_similar">相似照片</string>
+    <string name="clean_tab_low_quality">低质照片</string>
+
+    <string name="clean_scanning">正在扫描…</string>
+    <string name="clean_scanning_wait">请稍候…</string>
+    <string name="clean_scanning_description">正在分析设备照片，可能需要片刻时间。您也可退出到后台运行。</string>
+    <string name="clean_stop">停止</string>
+    <string name="clean_done">完成</string>
+    <string name="clean_all_caught_up">全部整理完毕！</string>
+
+    <string name="clean_no_similar_found">未发现相似照片</string>
+    <string name="clean_similar_done_description">您的相册整洁有序，没有发现重复冗余的照片。</string>
+    <string name="clean_no_low_quality_found">未发现低质照片</string>
+    <string name="clean_low_quality_done_description">所有已扫描的照片均符合清晰度标准。</string>
+
+    <string name="clean_similar_count">相似照片 (%1$d)</string>
+    <string name="clean_select_best">点击选择想要保留的最佳照片</string>
+    <string name="clean_keep_selected">保留选中照片</string>
+    <string name="clean_keep_all">全部保留</string>
+    <string name="clean_delete_all">全部删除</string>
+    <string name="clean_delete">删除</string>
+    <string name="clean_keep">保留</string>
+    <string name="clean_skip">跳过</string>
+    <string name="clean_undo">撤销</string>
+    <string name="clean_items_count">%1$d 张</string>
+    <string name="clean_pending_trash_count">%1$d</string>
+    <string name="clean_trash_button">确认清理</string>
+
+    <string name="clean_reason_blur">画面模糊</string>
+    <string name="clean_reason_underexposed">画面过暗</string>
+    <string name="clean_reason_overexposed">画面过曝</string>
+    <string name="clean_reason_small_file">体积过小</string>
+    <string name="clean_reason_low_resolution">分辨率偏低</string>
+    <string name="clean_reason_closed_eyes">人物闭眼</string>
+    <string name="clean_reason_solid_color">纯色无效</string>
+
+    <string name="clean_confirm_delete_title">清理照片</string>
+    <string name="clean_confirm_delete_msg">确定要将选中的 %1$d 张照片移入回收站吗？</string>
+    <string name="clean_cancel">取消</string>
+    <string name="clean_confirm">确定移入</string>
+</resources>

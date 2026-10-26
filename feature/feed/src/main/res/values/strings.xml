@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feed_title">Live Feed</string>
+    <string name="feed_filter_all">All</string>
+    <string name="feed_filter_live">Live</string>
+    <string name="feed_filter_video">Video</string>
+
+    <string name="feed_empty_title">No Media</string>
+    <string name="feed_empty_subtitle">Capture live photos or videos to see them here</string>
+
+    <string name="feed_sound_muted">Sound Off</string>
+    <string name="feed_sound_unmuted">Sound On</string>
+
+    <string name="feed_delete_confirm_title">Delete Media</string>
+    <string name="feed_delete_confirm_msg">Do you want to move this item to Trash?</string>
+    <string name="feed_delete_button">Delete</string>
+    <string name="feed_cancel_button">Cancel</string>
+    <string name="feed_delete_success">Moved to Trash</string>
+
+    <string name="feed_tag_live">LIVE</string>
+    <string name="feed_tag_video">VIDEO</string>
+    <string name="feed_share">Share</string>
+    <string name="feed_like">Favorite</string>
+</resources>

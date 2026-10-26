@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">设置</string>
+    <string name="settings_back">返回</string>
+    <string name="settings_language">语言</string>
+    <string name="settings_select_language">选择语言</string>
+    <string name="settings_privacy_policy">隐私政策</string>
+    <string name="settings_terms_of_service">服务条款</string>
+    <string name="settings_mute_videos">视频默认静音</string>
+    <string name="settings_sound_effects">音效</string>
+    <string name="settings_haptics">触觉震动反馈</string>
+    <string name="settings_batch_size">整理批次数量</string>
+    <string name="settings_queue_order">排序模式</string>
+    <string name="settings_order_random">随机乱序</string>
+    <string name="settings_order_time">按拍摄时间</string>
+    <string name="settings_avatar">助手头像</string>
+    <string name="settings_avatar_girl">女生</string>
+    <string name="settings_avatar_boy">男生</string>
+    <string name="settings_release_kept">释放已保留标记</string>
+    <string name="settings_release_kept_desc">允许之前滑卡保留的照片重新进入整理队列</string>
+    <string name="settings_released">已释放</string>
+    <string name="settings_release_dialog_title">释放已保留照片？</string>
+    <string name="settings_release_dialog_content">这将清除照片的保留标记，使它们重新回到滑卡整理队列中。</string>
+    <string name="settings_confirm">确定</string>
+    <string name="settings_cancel">取消</string>
+    <string name="settings_open_source_licenses">开源协议声明</string>
+    <string name="settings_version">版本</string>
+    <string name="settings_copyright">版权所有</string>
+
+    <!-- 隐私政策页面 -->
+    <string name="settings_privacy_sec1_title">本地数据处理</string>
+    <string name="settings_privacy_sec1_content">Relive 所有的照片与视频处理均 100% 在您的设备端离线运行。我们绝不会将您的任何媒体内容上传至任何云端服务器。</string>
+    <string name="settings_privacy_sec2_title">存储权限说明</string>
+    <string name="settings_privacy_sec2_content">相册读取权限仅用于加载您本地图库的照片与视频；批量删除与整理归档需要获取对应的文件管理权限。</string>
+    <string name="settings_privacy_sec3_title">端侧离线视觉分析</string>
+    <string name="settings_privacy_sec3_content">图像分类、相似照片对比及人脸检测均使用 Google ML Kit 在设备端独立离线计算，绝无任何人脸特征或元数据离开您的设备。</string>
+    <string name="settings_privacy_sec4_title">零隐私数据收集</string>
+    <string name="settings_privacy_sec4_content">我们不收集任何个人身份信息、广告追踪 ID 或行为埋点。您的媒体资产永远仅属于您自己。</string>
+
+    <!-- 欢迎引导流页面 -->
+    <string name="settings_welcome_title">欢迎使用 Relive</string>
+    <string name="settings_welcome_subtitle">极速、纯净、端侧离线的相册整理神器</string>
+    <string name="settings_welcome_lang_title">选择语言</string>
+    <string name="settings_welcome_lang_subtitle">选择您的首选显示语言</string>
+    <string name="settings_welcome_terms_title">服务协议与隐私条款</string>
+    <string name="settings_welcome_agree">我已阅读并同意服务条款与隐私政策</string>
+    <string name="settings_welcome_perm_title">相册访问授权</string>
+    <string name="settings_welcome_perm_subtitle">Relive 需要获取照片与视频访问权限以开展相册整理</string>
+    <string name="settings_welcome_grant_perm">立即授权</string>
+    <string name="settings_welcome_manage_storage_title">所有文件管理权限</string>
+    <string name="settings_welcome_manage_storage_desc">授权所有文件访问权限以开启静默删除与瞬间移动，无需频繁弹窗确认</string>
+    <string name="settings_welcome_perm_granted">已获得访问权限</string>
+    <string name="settings_welcome_start_title">准备开启整理</string>
+    <string name="settings_welcome_start_subtitle">左右轻滑，几分钟内轻松清理臃肿相册</string>
+    <string name="settings_welcome_start_button">开始体验</string>
+    <string name="settings_welcome_next">下一步</string>
+</resources>

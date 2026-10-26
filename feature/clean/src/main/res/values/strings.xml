@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="clean_title">Clean</string>
+    <string name="clean_tab_similar">Similar</string>
+    <string name="clean_tab_low_quality">Low Quality</string>
+
+    <string name="clean_scanning">Scanning…</string>
+    <string name="clean_scanning_wait">Please wait…</string>
+    <string name="clean_scanning_description">Analyzing photos on your device. This may take a few moments.</string>
+    <string name="clean_stop">Stop</string>
+    <string name="clean_done">Done</string>
+    <string name="clean_all_caught_up">You\'re all caught up!</string>
+
+    <string name="clean_no_similar_found">No similar photos found</string>
+    <string name="clean_similar_done_description">Your library is tidy and organized.</string>
+    <string name="clean_no_low_quality_found">No low quality photos found</string>
+    <string name="clean_low_quality_done_description">All scanned photos meet clarity standards.</string>
+
+    <string name="clean_similar_count">Similar (%1$d)</string>
+    <string name="clean_select_best">Select the best photo to keep</string>
+    <string name="clean_keep_selected">Keep Selected</string>
+    <string name="clean_keep_all">Keep All</string>
+    <string name="clean_delete_all">Delete All</string>
+    <string name="clean_delete">Delete</string>
+    <string name="clean_keep">Keep</string>
+    <string name="clean_skip">Skip</string>
+    <string name="clean_undo">Undo</string>
+    <string name="clean_items_count">%1$d items</string>
+    <string name="clean_pending_trash_count">%1$d</string>
+    <string name="clean_trash_button">Clean Trash</string>
+
+    <string name="clean_reason_blur">Blurry</string>
+    <string name="clean_reason_underexposed">Underexposed</string>
+    <string name="clean_reason_overexposed">Overexposed</string>
+    <string name="clean_reason_small_file">Small File</string>
+    <string name="clean_reason_low_resolution">Low Resolution</string>
+    <string name="clean_reason_closed_eyes">Closed Eyes</string>
+    <string name="clean_reason_solid_color">Solid Color</string>
+
+    <string name="clean_confirm_delete_title">Clean Photos</string>
+    <string name="clean_confirm_delete_msg">Do you want to move %1$d selected photos to Trash?</string>
+    <string name="clean_cancel">Cancel</string>
+    <string name="clean_confirm">Confirm</string>
+</resources>

@@ -1,0 +1,229 @@
+package com.jian.relive.feature.feed
+
+import android.app.Activity
+import android.widget.Toast
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.IntentSenderRequest
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.pager.VerticalPager
+import androidx.compose.foundation.pager.rememberPagerState
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.dp
+import androidx.compose.ui.zIndex
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavGraphBuilder
+import androidx.navigation.compose.composable
+import com.jian.relive.core.model.MediaItem
+import com.jian.relive.core.ui.component.PredictiveBackWrapper
+import com.jian.relive.core.ui.theme.ReliveBlack
+import com.jian.relive.feature.feed.ui.FeedActionsColumn
+import com.jian.relive.feature.feed.ui.FeedDeleteConfirmDialog
+import com.jian.relive.feature.feed.ui.FeedEmptyView
+import com.jian.relive.feature.feed.ui.FeedFilterSegmentedRow
+import com.jian.relive.feature.feed.ui.FeedHeartBurst
+import com.jian.relive.feature.feed.ui.FeedItemInfoOverlay
+import com.jian.relive.feature.feed.ui.FeedSoundControl
+import com.jian.relive.feature.feed.ui.FeedVolumeToastBadge
+import com.jian.relive.feature.feed.ui.LiveFeedPlayer
+import kotlinx.coroutines.delay
+import kotlinx.coroutines.launch
+import kotlinx.serialization.Serializable
+
+@Serializable
+data object FeedRoute
+
+/**
+ * 在导航图中注册实况与视频流媒体页面入口。
+ */
+fun NavGraphBuilder.feedScreen(
+    onBack: () -> Unit = {}
+) {
+    composable<FeedRoute> {
+        val viewModel: FeedViewModel = viewModel()
+        FeedRoute(
+            viewModel = viewModel,
+            onBack = onBack
+        )
+    }
+}
+
+@Composable
+internal fun FeedRoute(
+    viewModel: FeedViewModel,
+    onBack: () -> Unit,
+    modifier: Modifier = Modifier,
+    bottomPadding: Dp = 80.dp
+) {
+    val context = LocalContext.current
+    val scope = rememberCoroutineScope()
+    val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+
+    var pendingTrashItem by remember { mutableStateOf<MediaItem?>(null) }
+    var heartBurstTargetId by remember { mutableStateOf<Long?>(null) }
+
+    val trashSuccessMsg = stringResource(R.string.feed_delete_success)
+    val deleteLauncher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartIntentSenderForResult()
+    ) { result ->
+        if (result.resultCode == Activity.RESULT_OK) {
+            val item = pendingTrashItem
+            if (item != null) {
+                viewModel.onDeleteConfirmed(item)
+                Toast.makeText(context, trashSuccessMsg, Toast.LENGTH_SHORT).show()
+            }
+        }
+        pendingTrashItem = null
+    }
+
+    val pagerState = rememberPagerState(
+        pageCount = { kotlin.math.max(1, uiState.feedItems.size) }
+    )
+
+    LaunchedEffect(uiState.filterType) {
+        if (uiState.feedItems.isNotEmpty()) {
+            pagerState.scrollToPage(0)
+        }
+    }
+
+    PredictiveBackWrapper(
+        isVisible = true,
+        onBack = onBack
+    ) {
+        Box(
+            modifier = modifier
+                .fillMaxSize()
+                .background(ReliveBlack)
+        ) {
+            if (uiState.feedItems.isEmpty()) {
+                FeedEmptyView(
+                    filterType = uiState.filterType,
+                    bottomPadding = bottomPadding,
+                    modifier = Modifier.fillMaxSize()
+                )
+            } else {
+                VerticalPager(
+                    state = pagerState,
+                    modifier = Modifier.fillMaxSize(),
+                    key = { page ->
+                        uiState.feedItems.getOrNull(page)?.id ?: page
+                    }
+                ) { page ->
+                    val item = uiState.feedItems.getOrNull(page) ?: return@VerticalPager
+                    val isCurrentPage = page == pagerState.currentPage
+                    val isLiked = uiState.likedIds.contains(item.id)
+
+                    Box(modifier = Modifier.fillMaxSize()) {
+                        LiveFeedPlayer(
+                            item = item,
+                            isMuted = uiState.isMuted,
+                            shouldPlay = isCurrentPage,
+                            modifier = Modifier.fillMaxSize()
+                        )
+
+                        FeedItemInfoOverlay(
+                            item = item,
+                            bottomPadding = bottomPadding,
+                            modifier = Modifier.align(Alignment.BottomCenter)
+                        )
+
+                        FeedActionsColumn(
+                            item = item,
+                            isLiked = isLiked,
+                            bottomPadding = bottomPadding,
+                            onLikeClick = {
+                                viewModel.toggleLike(item)
+                                if (!isLiked) {
+                                    heartBurstTargetId = item.id
+                                    scope.launch {
+                                        delay(650)
+                                        if (heartBurstTargetId == item.id) {
+                                            heartBurstTargetId = null
+                                        }
+                                    }
+                                }
+                            },
+                            onDeleteClick = {
+                                viewModel.setItemToDelete(item)
+                            },
+                            modifier = Modifier.align(Alignment.BottomEnd)
+                        )
+
+                        FeedHeartBurst(
+                            visible = heartBurstTargetId == item.id,
+                            modifier = Modifier.align(Alignment.Center)
+                        )
+                    }
+                }
+            }
+
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 48.dp, start = 16.dp, end = 16.dp)
+                    .zIndex(10f)
+            ) {
+                FeedFilterSegmentedRow(
+                    selectedFilter = uiState.filterType,
+                    onFilterSelected = { viewModel.setFilterType(it) },
+                    modifier = Modifier.align(Alignment.Center)
+                )
+
+                FeedSoundControl(
+                    isMuted = uiState.isMuted,
+                    showToast = uiState.showVolumeToast,
+                    onToggleMute = { viewModel.toggleMute() },
+                    modifier = Modifier.align(Alignment.CenterEnd)
+                )
+            }
+
+            FeedVolumeToastBadge(
+                isMuted = uiState.isMuted,
+                visible = uiState.showVolumeToast,
+                modifier = Modifier
+                    .align(Alignment.TopCenter)
+                    .padding(top = 104.dp)
+                    .zIndex(15f)
+            )
+
+            if (uiState.itemToDelete != null) {
+                val target = uiState.itemToDelete!!
+                FeedDeleteConfirmDialog(
+                    onConfirm = {
+                        viewModel.setItemToDelete(null)
+                        viewModel.executeDelete(
+                            target = target,
+                            onIntentSender = { intentSender ->
+                                pendingTrashItem = target
+                                val request = IntentSenderRequest.Builder(intentSender).build()
+                                deleteLauncher.launch(request)
+                            },
+                            onSuccess = {
+                                Toast.makeText(context, trashSuccessMsg, Toast.LENGTH_SHORT).show()
+                            }
+                        )
+                    },
+                    onDismiss = {
+                        viewModel.setItemToDelete(null)
+                    }
+                )
+            }
+        }
+    }
+}

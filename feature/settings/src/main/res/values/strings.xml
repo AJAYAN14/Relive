@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="settings_title">Settings</string>
+    <string name="settings_back">Back</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_select_language">Select Language</string>
+    <string name="settings_privacy_policy">Privacy Policy</string>
+    <string name="settings_terms_of_service">Terms of Service</string>
+    <string name="settings_mute_videos">Mute Videos by Default</string>
+    <string name="settings_sound_effects">Sound Effects</string>
+    <string name="settings_haptics">Haptic Feedback</string>
+    <string name="settings_batch_size">Batch Size</string>
+    <string name="settings_queue_order">Queue Order</string>
+    <string name="settings_order_random">Random</string>
+    <string name="settings_order_time">By Date</string>
+    <string name="settings_avatar">Assistant Avatar</string>
+    <string name="settings_avatar_girl">Girl</string>
+    <string name="settings_avatar_boy">Boy</string>
+    <string name="settings_release_kept">Reset Kept Photos</string>
+    <string name="settings_release_kept_desc">Allow previously kept photos to appear in organize queue again</string>
+    <string name="settings_released">Released</string>
+    <string name="settings_release_dialog_title">Reset Kept Photos?</string>
+    <string name="settings_release_dialog_content">This will clear the kept status and let them appear in your organize queue again.</string>
+    <string name="settings_confirm">Confirm</string>
+    <string name="settings_cancel">Cancel</string>
+    <string name="settings_open_source_licenses">Open Source Licenses</string>
+    <string name="settings_version">Version</string>
+    <string name="settings_copyright">Copyright</string>
+
+    <!-- Privacy Screen -->
+    <string name="settings_privacy_sec1_title">Local Processing</string>
+    <string name="settings_privacy_sec1_content">Relive processes all your photos and videos completely on your device. We do not upload your media to any server or cloud storage.</string>
+    <string name="settings_privacy_sec2_title">Storage Permission</string>
+    <string name="settings_privacy_sec2_content">Media read permissions are only used to load photos and videos in your gallery. Silent deletion or file moving requires file access permission.</string>
+    <string name="settings_privacy_sec3_title">On-device AI Analysis</string>
+    <string name="settings_privacy_sec3_content">Image classification, similarity analysis, and face detection are executed locally using Google ML Kit. No facial data or analysis metadata leaves your device.</string>
+    <string name="settings_privacy_sec4_title">Zero Data Collection</string>
+    <string name="settings_privacy_sec4_content">We do not collect personal identifying information, tracking IDs, or analytics. Your photos belong to you only.</string>
+
+    <!-- Welcome / Onboarding Screen -->
+    <string name="settings_welcome_title">Welcome to Relive</string>
+    <string name="settings_welcome_subtitle">Your fast, private, on-device gallery organizer</string>
+    <string name="settings_welcome_lang_title">Choose Language</string>
+    <string name="settings_welcome_lang_subtitle">Select your preferred display language</string>
+    <string name="settings_welcome_terms_title">Terms &amp; Privacy</string>
+    <string name="settings_welcome_agree">I have read and agree to the Terms of Service &amp; Privacy Policy</string>
+    <string name="settings_welcome_perm_title">Photo Access</string>
+    <string name="settings_welcome_perm_subtitle">Relive requires access to your photos and videos to organize them</string>
+    <string name="settings_welcome_grant_perm">Grant Permission</string>
+    <string name="settings_welcome_manage_storage_title">Manage Files Permission</string>
+    <string name="settings_welcome_manage_storage_desc">Enable All Files Access for silent move and instant deletion without continuous system prompts</string>
+    <string name="settings_welcome_perm_granted">Permission Granted</string>
+    <string name="settings_welcome_start_title">Ready to Relive</string>
+    <string name="settings_welcome_start_subtitle">Start swiping through your photos and declutter your gallery in minutes</string>
+    <string name="settings_welcome_start_button">Get Started</string>
+    <string name="settings_welcome_next">Next</string>
+</resources>

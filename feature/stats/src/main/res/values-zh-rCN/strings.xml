@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="stats_title">拍摄统计</string>
+    <string name="stats_period_year">年度</string>
+    <string name="stats_period_month">月度</string>
+
+    <string name="stats_summary_year">%1$s: %2$d 项</string>
+    <string name="stats_summary_month">%1$s: %2$d 项</string>
+    <string name="stats_items_detail">%1$d 张照片 · %2$d 个视频</string>
+    <string name="stats_screenshots_count">%1$d 张截屏</string>
+
+    <string name="stats_video_title">视频总录制</string>
+    <string name="stats_video_duration_mins">%1$d 分钟</string>
+    <string name="stats_video_duration_less_than_one">&lt; 1 分钟</string>
+    <string name="stats_movie_ratio">相当于 %1$s 部《%2$s》</string>
+    <string name="stats_movie_short_drama">相当于 %1$s 部短剧</string>
+    <string name="stats_movie_tv_series">相当于 %1$s 集电视剧</string>
+
+    <string name="stats_location_title">拍摄足迹</string>
+    <string name="stats_location_count">%1$d 个地点</string>
+
+    <string name="stats_likes_title">喜欢标记</string>
+    <string name="stats_active_day_title">最活跃单日</string>
+    <string name="stats_most_active_detail">%1$s (%2$d 张)</string>
+    <string name="stats_active_empty">-</string>
+
+    <string name="stats_heatmap_title">足迹热力图</string>
+    <string name="stats_heatmap_less">少</string>
+    <string name="stats_heatmap_more">多</string>
+    <string name="stats_back">返回</string>
+</resources>

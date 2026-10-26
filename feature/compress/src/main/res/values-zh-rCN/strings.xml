@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="compress_title">媒体压缩</string>
+    <string name="compress_tab_image">图片</string>
+    <string name="compress_tab_video">视频</string>
+    <string name="compress_back">返回</string>
+
+    <!-- Image Compression Strings -->
+    <string name="compress_image_title">图片压缩</string>
+    <string name="compress_image_subtitle">压缩图片，释放空间</string>
+    <string name="compress_image_warning_title">清晰度提示</string>
+    <string name="compress_image_warning_body">压缩会降低清晰度，建议先试少量图片，满意后再批量处理。</string>
+    <string name="compress_image_threshold_label">筛选阈值</string>
+    <string name="compress_image_result_title">压缩完成</string>
+    <string name="compress_image_result_saved">节省空间</string>
+    <string name="compress_image_result_count">已压缩图片</string>
+    <string name="compress_image_delete_original">删除原图片</string>
+    <string name="compress_image_keep_original">保留原图片</string>
+    <string name="compress_image_before">原大小</string>
+    <string name="compress_image_after">压缩后</string>
+    <string name="compress_image_ratio">压缩比例</string>
+    <string name="compress_image_action">开始压缩</string>
+    <string name="compress_image_compressing">压缩中</string>
+    <string name="compress_image_select_hint">请选择要压缩的图片</string>
+    <string name="compress_image_error">图片压缩失败</string>
+    <string name="compress_image_original_label">原尺寸</string>
+    <string name="compress_image_original_size">保持尺寸</string>
+    <string name="compress_image_select_all">全选本月</string>
+    <string name="compress_image_selected">已全选</string>
+
+    <!-- Video Compression Strings -->
+    <string name="compress_video_title">视频压缩</string>
+    <string name="compress_video_subtitle">显著减小体积且不损失太多画质</string>
+    <string name="compress_video_warning_title">清晰度提示</string>
+    <string name="compress_video_warning_body">压缩会降低清晰度与码率，但多数场景仍可接受。建议先试少量视频，满意后再批量处理；画面越复杂，节省空间越多。</string>
+    <string name="compress_video_target_label">目标码率</string>
+    <string name="compress_video_bitrate_low">更小体积</string>
+    <string name="compress_video_bitrate_balanced">均衡</string>
+    <string name="compress_video_bitrate_high">更清晰</string>
+    <string name="compress_video_threshold_label">筛选阈值</string>
+    <string name="compress_video_estimate">预计</string>
+    <string name="compress_video_times">已压缩 %d 次</string>
+    <string name="compress_video_result_title">压缩完成</string>
+    <string name="compress_video_result_saved">节省空间</string>
+    <string name="compress_video_result_count">已压缩视频</string>
+    <string name="compress_video_delete_original">删除原视频</string>
+    <string name="compress_video_keep_original">保留原视频</string>
+    <string name="compress_video_before">原大小</string>
+    <string name="compress_video_after">压缩后</string>
+    <string name="compress_video_ratio">压缩比例</string>
+    <string name="compress_video_action">开始压缩</string>
+    <string name="compress_video_compressing">压缩中</string>
+    <string name="compress_video_select_hint">请选择要压缩的视频</string>
+    <string name="compress_video_error">视频压缩失败</string>
+</resources>

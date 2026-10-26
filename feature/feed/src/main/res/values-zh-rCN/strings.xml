@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="feed_title">实况流</string>
+    <string name="feed_filter_all">全部</string>
+    <string name="feed_filter_live">实况</string>
+    <string name="feed_filter_video">视频</string>
+
+    <string name="feed_empty_title">暂无内容</string>
+    <string name="feed_empty_subtitle">拍摄实况照片或录制视频即可在此沉浸浏览</string>
+
+    <string name="feed_sound_muted">静音</string>
+    <string name="feed_sound_unmuted">声音开启</string>
+
+    <string name="feed_delete_confirm_title">删除媒体</string>
+    <string name="feed_delete_confirm_msg">确定要将此项移入回收站吗？</string>
+    <string name="feed_delete_button">删除</string>
+    <string name="feed_cancel_button">取消</string>
+    <string name="feed_delete_success">已移入回收站</string>
+
+    <string name="feed_tag_live">实况</string>
+    <string name="feed_tag_video">视频</string>
+    <string name="feed_share">分享</string>
+    <string name="feed_like">喜欢</string>
+</resources>

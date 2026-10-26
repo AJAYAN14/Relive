@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Relive</string>
+    <string name="nav_organize">Organize</string>
+    <string name="nav_live_feed">Live Feed</string>
+    <string name="nav_stats">Stats</string>
+    <string name="nav_settings">Settings</string>
+    <string name="nav_clean">Clean</string>
+    <string name="nav_compress">Compress</string>
+</resources>
