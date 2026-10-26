@@ -12,6 +12,13 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.animation.doOnEnd
+import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
+import androidx.lifecycle.lifecycleScope
+import com.jian.relive.core.media.MotionPhotoHelper
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -49,12 +56,54 @@ import com.jian.relive.navigation.ReliveNavHost
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+        val splashScreen = installSplashScreen()
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
+
+        val appGraph = AppGraph(applicationContext)
+        val initialPrefs = appGraph.preferencesManager
+        var isAppReady = false
+
+        splashScreen.setKeepOnScreenCondition { !isAppReady }
+        splashScreen.setOnExitAnimationListener { splashScreenViewProvider ->
+            val fadeOut = android.animation.ObjectAnimator.ofFloat(
+                splashScreenViewProvider.view,
+                android.view.View.ALPHA,
+                1f,
+                0f
+            ).apply {
+                interpolator = android.view.animation.DecelerateInterpolator()
+                duration = 200L
+                doOnEnd {
+                    splashScreenViewProvider.remove()
+                }
+            }
+            fadeOut.start()
+        }
+
+        lifecycleScope.launch(Dispatchers.IO) {
+            MotionPhotoHelper.initCache(applicationContext)
+
+            val hasImages = ContextCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.READ_MEDIA_IMAGES
+            ) == PackageManager.PERMISSION_GRANTED
+            val hasVideo = ContextCompat.checkSelfPermission(
+                applicationContext,
+                Manifest.permission.READ_MEDIA_VIDEO
+            ) == PackageManager.PERMISSION_GRANTED
+
+            if (initialPrefs.onboardingCompleted && hasImages && hasVideo) {
+                appGraph.mediaRepository.loadMedia(applicationContext)
+            }
+            withContext(Dispatchers.Main) {
+                isAppReady = true
+            }
+        }
+
         setContent {
             val context = LocalContext.current
-            val appGraph = remember { AppGraph(applicationContext) }
-            val prefs = remember { PreferencesManager(context) }
+            val prefs = remember { appGraph.preferencesManager }
             val navController = rememberNavController()
 
             var onboardingCompleted by remember { mutableStateOf(prefs.onboardingCompleted) }
@@ -150,6 +199,7 @@ class MainActivity : ComponentActivity() {
                                 onRequestPermission = requestPermissions,
                                 hasManageStorage = hasManageStorage,
                                 onRequestManageStorage = requestManageStorage,
+                                mediaRepository = appGraph.mediaRepository,
                                 onFinishWelcome = {
                                     prefs.onboardingCompleted = true
                                     onboardingCompleted = true

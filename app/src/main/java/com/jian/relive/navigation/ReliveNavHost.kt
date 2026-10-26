@@ -11,6 +11,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import com.jian.relive.core.common.preferences.PreferencesManager
+import com.jian.relive.core.media.MediaRepository
 import com.jian.relive.feature.clean.CleanRoute
 import com.jian.relive.feature.clean.cleanScreen
 import com.jian.relive.feature.compress.CompressRoute
@@ -35,6 +36,7 @@ fun ReliveNavHost(
     onRequestPermission: () -> Unit = {},
     hasManageStorage: Boolean = true,
     onRequestManageStorage: () -> Unit = {},
+    mediaRepository: MediaRepository? = null,
     onFinishWelcome: () -> Unit = {}
 ) {
     NavHost(
@@ -62,6 +64,7 @@ fun ReliveNavHost(
         }
 
         organizeScreen(
+            mediaRepository = mediaRepository,
             onNavigateToStats = {
                 navController.navigate(StatsRoute)
             },

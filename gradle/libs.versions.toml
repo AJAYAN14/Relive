@@ -18,8 +18,10 @@ mlkitImageLabeling = "17.0.9"
 mlkitFaceDetection = "16.1.7"
 exifinterface = "1.4.0"
 coroutines = "1.10.1"
+coreSplashscreen = "1.0.1"
 
 [libraries]
+androidx-core-splashscreen = { group = "androidx.core", name = "core-splashscreen", version.ref = "coreSplashscreen" }
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
 junit = { group = "junit", name = "junit", version.ref = "junit" }
 androidx-junit = { group = "androidx.test.ext", name = "junit", version.ref = "junitVersion" }

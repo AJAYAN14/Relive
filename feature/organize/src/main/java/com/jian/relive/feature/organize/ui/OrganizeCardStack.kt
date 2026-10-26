@@ -118,6 +118,7 @@ fun OrganizeCardStack(
 
     LaunchedEffect(animationToken) {
         if (isInitialLoad && visibleItems.isNotEmpty()) {
+            delay(280)
             soundEffectHelper.playStart()
             cardEntryOffsets.forEachIndexed { index, anim ->
                 launch {

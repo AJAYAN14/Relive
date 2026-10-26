@@ -36,6 +36,9 @@ class MediaRepository(
     private val _mediaItems = MutableStateFlow<List<MediaItem>>(emptyList())
     val mediaItems: StateFlow<List<MediaItem>> = _mediaItems.asStateFlow()
 
+    private val _isInitialLoaded = MutableStateFlow(false)
+    val isInitialLoaded: StateFlow<Boolean> = _isInitialLoaded.asStateFlow()
+
     private data class RawMediaItem(
         val id: Long,
         val date: Long,
@@ -249,9 +252,11 @@ class MediaRepository(
         } catch (e: Exception) {
             if (e is CancellationException) throw e
             Log.e("MediaRepository", "Error loading media: ${e.message}", e)
+            _isInitialLoaded.value = true
         }
 
         _mediaItems.value = items
+        _isInitialLoaded.value = true
         startMotionPhotoScan(context, items)
         items
     }

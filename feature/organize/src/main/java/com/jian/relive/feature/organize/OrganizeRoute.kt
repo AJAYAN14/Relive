@@ -114,13 +114,22 @@ private enum class OrganizeOverlay {
 }
 
 fun NavGraphBuilder.organizeScreen(
+    mediaRepository: com.jian.relive.core.media.MediaRepository? = null,
     onNavigateToStats: () -> Unit = {},
     onNavigateToClean: () -> Unit = {},
     onNavigateToCompress: () -> Unit = {},
     onNavigateToLikes: () -> Unit = {}
 ) {
     composable<OrganizeRoute> {
+        val vmFactory = remember(mediaRepository) {
+            if (mediaRepository != null) {
+                OrganizeViewModel.provideFactory(mediaRepository)
+            } else {
+                OrganizeViewModel.Factory
+            }
+        }
         OrganizeScreen(
+            viewModel = viewModel(factory = vmFactory),
             onNavigateToStats = onNavigateToStats,
             onNavigateToClean = onNavigateToClean,
             onNavigateToCompress = onNavigateToCompress,

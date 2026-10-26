@@ -38,12 +38,12 @@ import java.util.Calendar
  */
 class OrganizeViewModel(
     application: Application,
+    private val mediaRepository: MediaRepository = MediaRepository(),
     private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
     private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : AndroidViewModel(application) {
 
     private val context: Context get() = getApplication()
-    private val mediaRepository = MediaRepository()
     private val prefs = PreferencesManager(context)
 
     private val _uiState = MutableStateFlow(OrganizeUiState())
@@ -107,6 +107,9 @@ class OrganizeViewModel(
     private fun observeMediaRepository() {
         viewModelScope.launch {
             mediaRepository.mediaItems.collect { items ->
+                if (!mediaRepository.isInitialLoaded.value && items.isEmpty()) {
+                    return@collect
+                }
                 allMediaList = sortMediaList(items, _uiState.value.queueOrder)
                 val folders = calculateFolderList(items)
                 val dropTargets = calculateFolderDropTargets(items, _uiState.value.folderUsage)
@@ -449,13 +452,14 @@ class OrganizeViewModel(
             val remainingAfterBatch = (remaining.size - nextBatch.size).coerceAtLeast(0)
 
             withContext(Dispatchers.Main) {
+                val isLoaded = mediaRepository.isInitialLoaded.value
                 _uiState.update {
                     it.copy(
                         displayMedia = nextBatch,
                         currentBatchTotal = nextBatch.size,
-                        isFullAlbumDone = allMediaList.isNotEmpty() && remaining.isEmpty(),
+                        isFullAlbumDone = isLoaded && allMediaList.isNotEmpty() && remaining.isEmpty(),
                         remainingCount = remainingAfterBatch,
-                        isLoading = false,
+                        isLoading = !isLoaded,
                         undoStack = emptyList()
                     )
                 }
@@ -672,6 +676,16 @@ class OrganizeViewModel(
             initializer {
                 val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]!!
                 OrganizeViewModel(app)
+            }
+        }
+
+        /**
+         * 注入共享媒体仓库实例的工厂构造器。
+         */
+        fun provideFactory(mediaRepository: MediaRepository): ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]!!
+                OrganizeViewModel(app, mediaRepository)
             }
         }
     }
