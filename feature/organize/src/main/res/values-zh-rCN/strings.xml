@@ -61,4 +61,22 @@
     <string name="organize_create">创建</string>
     <string name="organize_move_to">已移动至 %1$s</string>
     <string name="organize_delete_batch_success">已安全删除所选照片</string>
+    <string name="organize_deep_title">深度整理</string>
+    <string name="organize_deep_scanning">正在分析相册…</string>
+    <string name="organize_deep_complete">分析完成</string>
+    <string name="organize_deep_desc_detailed">根据相册大小，预计耗时约 %1$d 分钟。您可以退出并让其在后台运行。</string>
+    <string name="organize_deep_similar_title">相似照片</string>
+    <string name="organize_deep_similar_subtitle">查找并清理重复连拍</string>
+    <string name="organize_deep_low_quality_title">低质照片</string>
+    <string name="organize_deep_low_quality_subtitle">模糊、过暗或废片</string>
+    <string name="organize_deep_video_compress_title">视频压缩</string>
+    <string name="organize_deep_video_compress_subtitle">画质近无损大幅节省体积</string>
+    <string name="organize_deep_image_compress_title">照片压缩</string>
+    <string name="organize_deep_image_compress_subtitle">压缩超大相片节省空间</string>
+    <string name="organize_release_dialog_title">释放已保留照片</string>
+    <string name="organize_release_dialog_content">这将重置此分类下保留的照片，允许您重新整理。已收藏、待删除及移动的照片不受影响。</string>
+    <string name="organize_release_kept_button">释放已保留照片</string>
+    <string name="organize_released_toast">已重置保留照片</string>
+    <string name="organize_view_likes_button">查看我喜欢的相片</string>
+    <string name="organize_confirm">确认</string>
 </resources>

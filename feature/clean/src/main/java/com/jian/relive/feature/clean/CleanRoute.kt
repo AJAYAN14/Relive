@@ -53,7 +53,7 @@ fun NavGraphBuilder.cleanScreen(
     onBack: () -> Unit = {}
 ) {
     composable<CleanRoute> {
-        val viewModel: CleanViewModel = viewModel()
+        val viewModel: CleanViewModel = viewModel(factory = CleanViewModel.Factory)
         CleanRoute(
             viewModel = viewModel,
             onBack = onBack

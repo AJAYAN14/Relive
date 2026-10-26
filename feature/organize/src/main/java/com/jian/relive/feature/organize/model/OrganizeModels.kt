@@ -95,12 +95,19 @@ data class OrganizeUiState(
     val topCardSimilarGroup: List<MediaItem>? = null,
     val folderUsage: Map<String, Int> = emptyMap(),
     val soundEffectsEnabled: Boolean = true,
-    val hapticsEnabled: Boolean = true
+    val hapticsEnabled: Boolean = true,
+    val remainingCount: Int = 0
 ) {
     val canUndo: Boolean
         get() = undoStack.isNotEmpty()
 
     val topCard: MediaItem?
         get() = displayMedia.firstOrNull()
+
+    val isFilterActive: Boolean
+        get() = filterFolder != "All" || filterType != "All" || filterMonth != "All"
+
+    val isTrulyDone: Boolean
+        get() = isFullAlbumDone || (isFilterActive && remainingCount == 0)
 }
 

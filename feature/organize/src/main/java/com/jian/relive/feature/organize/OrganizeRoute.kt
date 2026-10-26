@@ -28,6 +28,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.AutoAwesome
 import androidx.compose.material.icons.outlined.CalendarMonth
 import androidx.compose.material.icons.outlined.CheckCircle
 import androidx.compose.material.icons.outlined.Delete
@@ -66,6 +67,7 @@ import com.jian.relive.core.media.FileOperationManager
 import com.jian.relive.core.model.MediaItem
 import com.jian.relive.core.model.UndoAction
 import com.jian.relive.core.ui.animation.bounceClick
+import com.jian.relive.core.ui.component.FullScreenImageViewer
 import com.jian.relive.core.ui.component.PredictiveBackWrapper
 import com.jian.relive.core.ui.theme.ReliveBlack
 import com.jian.relive.core.ui.theme.ReliveGray100
@@ -76,12 +78,15 @@ import com.jian.relive.core.ui.theme.ReliveRed50
 import com.jian.relive.core.ui.theme.ReliveRed600
 import com.jian.relive.core.ui.theme.ReliveWhite
 import com.jian.relive.feature.organize.model.OrganizeUiState
+import com.jian.relive.feature.organize.ui.DeepOrganizeView
 import com.jian.relive.feature.organize.ui.DeleteReviewModal
+import com.jian.relive.feature.organize.ui.EmptyState
 import com.jian.relive.feature.organize.ui.FilterSheet
 import com.jian.relive.feature.organize.ui.FolderDropRow
 import com.jian.relive.feature.organize.ui.MonthlyListView
 import com.jian.relive.feature.organize.ui.MonthlyReviewView
 import com.jian.relive.feature.organize.ui.OrganizeCardStack
+import com.jian.relive.core.ui.sound.rememberSoundEffectHelper
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import java.io.File
@@ -97,15 +102,22 @@ private enum class OrganizeOverlay {
     FILTER,
     MONTHLY_LIST,
     MONTHLY_REVIEW,
-    DELETE_REVIEW
+    DELETE_REVIEW,
+    DEEP_ORGANIZE
 }
 
 fun NavGraphBuilder.organizeScreen(
-    onNavigateToStats: () -> Unit = {}
+    onNavigateToStats: () -> Unit = {},
+    onNavigateToClean: () -> Unit = {},
+    onNavigateToCompress: () -> Unit = {},
+    onNavigateToLikes: () -> Unit = {}
 ) {
     composable<OrganizeRoute> {
         OrganizeScreen(
-            onNavigateToStats = onNavigateToStats
+            onNavigateToStats = onNavigateToStats,
+            onNavigateToClean = onNavigateToClean,
+            onNavigateToCompress = onNavigateToCompress,
+            onNavigateToLikes = onNavigateToLikes
         )
     }
 }
@@ -113,8 +125,11 @@ fun NavGraphBuilder.organizeScreen(
 @Composable
 internal fun OrganizeScreen(
     modifier: Modifier = Modifier,
-    viewModel: OrganizeViewModel = viewModel(),
-    onNavigateToStats: () -> Unit = {}
+    viewModel: OrganizeViewModel = viewModel(factory = OrganizeViewModel.Factory),
+    onNavigateToStats: () -> Unit = {},
+    onNavigateToClean: () -> Unit = {},
+    onNavigateToCompress: () -> Unit = {},
+    onNavigateToLikes: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
     var currentOverlay by remember { mutableStateOf(OrganizeOverlay.NONE) }
@@ -123,9 +138,11 @@ internal fun OrganizeScreen(
     var newFolderName by remember { mutableStateOf("") }
     var pendingMoveItem by remember { mutableStateOf<MediaItem?>(null) }
     var pendingDeletedIds by remember { mutableStateOf<Set<Long>>(emptySet()) }
+    var fullScreenViewerItem by remember { mutableStateOf<MediaItem?>(null) }
 
     val context = LocalContext.current
     val scope = rememberCoroutineScope()
+    val soundHelper = rememberSoundEffectHelper()
 
     val intentSenderLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartIntentSenderForResult()
@@ -158,16 +175,35 @@ internal fun OrganizeScreen(
                     OrganizeOverlay.NONE -> {
                         MainOrganizeContent(
                             uiState = uiState,
-                            onSwipeLeft = { item -> viewModel.handleSwipe(UndoAction.Trash(item)) },
-                            onSwipeRight = { item -> viewModel.handleSwipe(UndoAction.Like(item)) },
-                            onSwipeUp = { item -> viewModel.handleSwipe(UndoAction.Keep(item)) },
+                            onSwipeLeft = { item ->
+                                soundHelper.playDelete(uiState.soundEffectsEnabled)
+                                viewModel.handleSwipe(UndoAction.Trash(item))
+                            },
+                            onSwipeRight = { item ->
+                                soundHelper.playLike(uiState.soundEffectsEnabled)
+                                viewModel.handleSwipe(UndoAction.Like(item))
+                            },
+                            onSwipeUp = { item ->
+                                soundHelper.playSwipe(uiState.soundEffectsEnabled)
+                                viewModel.handleSwipe(UndoAction.Keep(item))
+                            },
                             onClearUndoAnimation = { viewModel.clearUndoAnimation() },
-                            onUndo = { viewModel.handleUndo() },
-                            onLoadNextBatch = { viewModel.loadNextBatch(playEntryAnimation = true) },
+                            onUndo = {
+                                soundHelper.playSwipe(uiState.soundEffectsEnabled)
+                                viewModel.handleUndo()
+                            },
+                            onLoadNextBatch = {
+                                soundHelper.playStart(uiState.soundEffectsEnabled)
+                                viewModel.loadNextBatch(playEntryAnimation = true)
+                            },
                             onOpenFilter = { currentOverlay = OrganizeOverlay.FILTER },
                             onOpenMonthly = { currentOverlay = OrganizeOverlay.MONTHLY_LIST },
                             onOpenTrash = { currentOverlay = OrganizeOverlay.DELETE_REVIEW },
+                            onOpenDeepOrganize = { currentOverlay = OrganizeOverlay.DEEP_ORGANIZE },
                             onNavigateToStats = onNavigateToStats,
+                            onNavigateToLikes = onNavigateToLikes,
+                            onReleaseKept = { viewModel.releaseKeptMedia() },
+                            onCardLongClick = { fullScreenViewerItem = it },
                             onDropTargetSelected = { item, targetId ->
                                 if (targetId == "new_folder") {
                                     pendingMoveItem = item
@@ -234,6 +270,13 @@ internal fun OrganizeScreen(
                             muteVideos = !uiState.soundEffectsEnabled,
                             onTrashClick = { currentOverlay = OrganizeOverlay.DELETE_REVIEW },
                             onSwipe = { item, isTrash, isLike ->
+                                if (isTrash) {
+                                    soundHelper.playDelete(uiState.soundEffectsEnabled)
+                                } else if (isLike) {
+                                    soundHelper.playLike(uiState.soundEffectsEnabled)
+                                } else {
+                                    soundHelper.playSwipe(uiState.soundEffectsEnabled)
+                                }
                                 val action = when {
                                     isTrash -> UndoAction.Trash(item)
                                     isLike -> UndoAction.Like(item)
@@ -242,6 +285,7 @@ internal fun OrganizeScreen(
                                 viewModel.handleSwipe(action)
                             },
                             onUndo = { _, onStackUpdated, onRestored ->
+                                soundHelper.playSwipe(uiState.soundEffectsEnabled)
                                 val lastAction = uiState.undoStack.lastOrNull()
                                 if (lastAction != null) {
                                     onRestored(lastAction.item)
@@ -279,6 +323,29 @@ internal fun OrganizeScreen(
                                 }
                             },
                             onCancel = { currentOverlay = OrganizeOverlay.NONE }
+                        )
+                    }
+
+                    OrganizeOverlay.DEEP_ORGANIZE -> {
+                        DeepOrganizeView(
+                            allMedia = uiState.allMedia,
+                            onBack = { currentOverlay = OrganizeOverlay.NONE },
+                            onSimilarClick = {
+                                currentOverlay = OrganizeOverlay.NONE
+                                onNavigateToClean()
+                            },
+                            onLowQualityClick = {
+                                currentOverlay = OrganizeOverlay.NONE
+                                onNavigateToClean()
+                            },
+                            onVideoCompressClick = {
+                                currentOverlay = OrganizeOverlay.NONE
+                                onNavigateToCompress()
+                            },
+                            onImageCompressClick = {
+                                currentOverlay = OrganizeOverlay.NONE
+                                onNavigateToCompress()
+                            }
                         )
                     }
                 }
@@ -347,6 +414,13 @@ internal fun OrganizeScreen(
                     }
                 )
             }
+
+            if (fullScreenViewerItem != null) {
+                FullScreenImageViewer(
+                    item = fullScreenViewerItem!!,
+                    onDismiss = { fullScreenViewerItem = null }
+                )
+            }
         }
     }
 }
@@ -366,7 +440,11 @@ private fun MainOrganizeContent(
     onOpenFilter: () -> Unit,
     onOpenMonthly: () -> Unit,
     onOpenTrash: () -> Unit,
+    onOpenDeepOrganize: () -> Unit,
     onNavigateToStats: () -> Unit,
+    onNavigateToLikes: () -> Unit,
+    onReleaseKept: () -> Unit,
+    onCardLongClick: (MediaItem) -> Unit,
     onDropTargetSelected: (MediaItem, String) -> Unit
 ) {
     var isFolderDropMode by remember { mutableStateOf(false) }
@@ -448,6 +526,19 @@ private fun MainOrganizeContent(
                     }
 
                     IconButton(
+                        onClick = onOpenDeepOrganize,
+                        modifier = Modifier
+                            .clip(CircleShape)
+                            .background(ReliveGray100)
+                    ) {
+                        Icon(
+                            imageVector = Icons.Outlined.AutoAwesome,
+                            contentDescription = stringResource(R.string.organize_deep_title),
+                            tint = ReliveBlack
+                        )
+                    }
+
+                    IconButton(
                         onClick = onOpenMonthly,
                         modifier = Modifier
                             .clip(CircleShape)
@@ -482,43 +573,18 @@ private fun MainOrganizeContent(
                 contentAlignment = Alignment.Center
             ) {
                 if (uiState.displayMedia.isEmpty() && !uiState.isLoading) {
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center,
-                        modifier = Modifier.padding(32.dp)
-                    ) {
-                        Icon(
-                            imageVector = Icons.Outlined.CheckCircle,
-                            contentDescription = null,
-                            tint = ReliveGreen500,
-                            modifier = Modifier.size(72.dp)
-                        )
-                        Spacer(modifier = Modifier.height(16.dp))
-                        Text(
-                            text = stringResource(R.string.organize_empty_state_title),
-                            fontSize = 24.sp,
-                            fontFamily = FontFamily.Serif,
-                            fontWeight = FontWeight.Bold,
-                            color = ReliveBlack
-                        )
-                        Spacer(modifier = Modifier.height(8.dp))
-                        Text(
-                            text = stringResource(R.string.organize_empty_state_subtitle),
-                            fontSize = 14.sp,
-                            color = ReliveGray500
-                        )
-                        Spacer(modifier = Modifier.height(24.dp))
-                        Button(
-                            onClick = onLoadNextBatch,
-                            colors = ButtonDefaults.buttonColors(containerColor = ReliveBlack),
-                            shape = RoundedCornerShape(24.dp)
-                        ) {
-                            Text(
-                                text = stringResource(R.string.organize_continue),
-                                color = ReliveWhite
-                            )
-                        }
-                    }
+                    EmptyState(
+                        onRestart = onLoadNextBatch,
+                        filterFolder = uiState.filterFolder,
+                        filterType = uiState.filterType,
+                        filterMonth = uiState.filterMonth,
+                        onReleaseKept = onReleaseKept,
+                        onViewLikes = onNavigateToLikes,
+                        onChangeFilter = onOpenFilter,
+                        remainingCount = uiState.remainingCount,
+                        isFullAlbumDone = uiState.isFullAlbumDone,
+                        modifier = Modifier.fillMaxSize()
+                    )
                 } else {
                     OrganizeCardStack(
                         items = uiState.displayMedia,
@@ -527,6 +593,7 @@ private fun MainOrganizeContent(
                         onSwipeLeft = onSwipeLeft,
                         onSwipeRight = onSwipeRight,
                         onSwipeUp = onSwipeUp,
+                        onLongClick = onCardLongClick,
                         onClearUndoAnimation = onClearUndoAnimation
                     )
                 }

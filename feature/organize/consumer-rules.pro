@@ -1,0 +1,1 @@
+-keep class com.jian.relive.feature.organize.** { *; }

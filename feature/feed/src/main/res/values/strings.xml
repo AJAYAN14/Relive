@@ -21,4 +21,23 @@
     <string name="feed_tag_video">VIDEO</string>
     <string name="feed_share">Share</string>
     <string name="feed_like">Favorite</string>
+    <string name="feed_likes_title">Likes</string>
+    <string name="feed_likes_no_items">No liked photos or videos</string>
+    <string name="feed_likes_folder_no_items">No items in folder</string>
+    <string name="feed_likes_comments_header">Notes &amp; Comments</string>
+    <string name="feed_likes_comment_user_me">Me</string>
+    <string name="feed_likes_copy_comment">Copy</string>
+    <string name="feed_likes_comment_copied">Copied to clipboard</string>
+    <string name="feed_likes_delete_comment">Delete</string>
+    <string name="feed_likes_delete_comment_title">Delete Note</string>
+    <string name="feed_likes_delete_comment_message">Are you sure you want to delete this note?</string>
+    <string name="feed_likes_comment_placeholder">Add a note…</string>
+    <string name="feed_likes_send">Send</string>
+    <string name="feed_likes_remove_like">Unlike</string>
+    <string name="feed_likes_remove_like_title">Unlike Photo</string>
+    <string name="feed_likes_remove_like_message">Remove this photo from your liked list?</string>
+    <string name="feed_likes_remove">Remove</string>
+    <string name="feed_likes_danmaku">Danmaku</string>
+    <string name="feed_likes_unknown_location">Unknown Location</string>
+    <string name="feed_likes_back">Back</string>
 </resources>

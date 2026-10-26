@@ -21,4 +21,23 @@
     <string name="feed_tag_video">视频</string>
     <string name="feed_share">分享</string>
     <string name="feed_like">喜欢</string>
+    <string name="feed_likes_title">喜欢</string>
+    <string name="feed_likes_no_items">还没有喜欢的照片或视频</string>
+    <string name="feed_likes_folder_no_items">此相册中暂无媒体</string>
+    <string name="feed_likes_comments_header">条评论与随记</string>
+    <string name="feed_likes_comment_user_me">我</string>
+    <string name="feed_likes_copy_comment">复制内容</string>
+    <string name="feed_likes_comment_copied">已复制到剪贴板</string>
+    <string name="feed_likes_delete_comment">删除</string>
+    <string name="feed_likes_delete_comment_title">删除随记</string>
+    <string name="feed_likes_delete_comment_message">确定要删除这条随记吗？</string>
+    <string name="feed_likes_comment_placeholder">添加一条随记…</string>
+    <string name="feed_likes_send">发送</string>
+    <string name="feed_likes_remove_like">取消喜欢</string>
+    <string name="feed_likes_remove_like_title">取消喜欢</string>
+    <string name="feed_likes_remove_like_message">确定要将此项从喜欢列表中移除吗？</string>
+    <string name="feed_likes_remove">移除</string>
+    <string name="feed_likes_danmaku">弹幕</string>
+    <string name="feed_likes_unknown_location">未知地点</string>
+    <string name="feed_likes_back">返回</string>
 </resources>

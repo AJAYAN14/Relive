@@ -51,7 +51,7 @@ fun NavGraphBuilder.statsScreen(
     onBack: () -> Unit = {}
 ) {
     composable<StatsRoute> {
-        val viewModel: StatsViewModel = viewModel()
+        val viewModel: StatsViewModel = viewModel(factory = StatsViewModel.Factory)
         StatsRoute(
             viewModel = viewModel,
             onBack = onBack

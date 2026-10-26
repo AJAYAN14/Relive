@@ -3,7 +3,11 @@ package com.jian.relive.feature.organize
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.jian.relive.core.common.preferences.PreferencesManager
 import com.jian.relive.core.media.MediaAnalysisManager
 import com.jian.relive.core.media.MediaRepository
@@ -431,6 +435,7 @@ class OrganizeViewModel(
 
             val remaining = filtered.filter { !processedSnapshot.contains(it.id) }
             val nextBatch = remaining.take(batchSize)
+            val remainingAfterBatch = (remaining.size - nextBatch.size).coerceAtLeast(0)
 
             withContext(Dispatchers.Main) {
                 _uiState.update {
@@ -438,12 +443,88 @@ class OrganizeViewModel(
                         displayMedia = nextBatch,
                         currentBatchTotal = nextBatch.size,
                         isFullAlbumDone = remaining.isEmpty(),
+                        remainingCount = remainingAfterBatch,
                         isLoading = false,
                         undoStack = emptyList()
                     )
                 }
                 triggerLookaheadSimilarityCheck(nextBatch)
             }
+        }
+    }
+
+    /**
+     * 释放当前筛选条件下的保留照片，将其移出已处理集合以便重新整理。
+     */
+    fun releaseKeptMedia() {
+        viewModelScope.launch(defaultDispatcher) {
+            val currentState = _uiState.value
+            val processed = prefs.processedIds.toMutableSet()
+            val liked = prefs.likedIds.toSet()
+            val pendingTrash = prefs.pendingTrashIds.toSet()
+            val moved = prefs.movedIds.toSet()
+
+            var targetMedia = allMediaList
+            val folderFilter = currentState.filterFolder
+            val typeFilter = currentState.filterType
+            val monthFilter = currentState.filterMonth
+
+            if (folderFilter != "All") {
+                targetMedia = targetMedia.filter { it.bucketName == folderFilter }
+            }
+
+            if (typeFilter != "All") {
+                targetMedia = targetMedia.filter { item ->
+                    when (typeFilter) {
+                        "Image" -> item.type == "photo" && !item.isLivePhoto
+                        "Video" -> item.type == "video"
+                        "Live" -> item.isLivePhoto
+                        else -> true
+                    }
+                }
+            }
+
+            if (monthFilter != "All") {
+                val calendar = Calendar.getInstance()
+                targetMedia = targetMedia.filter { item ->
+                    calendar.timeInMillis = item.dateAdded * 1000L
+                    val year = calendar.get(Calendar.YEAR)
+                    val month = calendar.get(Calendar.MONTH) + 1
+                    val key = "$year-${month.toString().padStart(2, '0')}"
+                    key == monthFilter
+                }
+            }
+
+            val toRelease = targetMedia.filter {
+                processed.contains(it.id) &&
+                    !liked.contains(it.id) &&
+                    !pendingTrash.contains(it.id) &&
+                    !moved.contains(it.id)
+            }
+
+            if (toRelease.isNotEmpty()) {
+                val toReleaseIds = toRelease.map { it.id }.toSet()
+                processed.removeAll(toReleaseIds)
+                prefs.processedIds = processed
+
+                val stats = prefs.stats
+                val updatedStats = stats.copy(
+                    processed = (stats.processed - toRelease.size).coerceAtLeast(0),
+                    skipped = (stats.skipped - toRelease.size).coerceAtLeast(0)
+                )
+                prefs.stats = updatedStats
+
+                withContext(Dispatchers.Main) {
+                    _uiState.update {
+                        it.copy(
+                            processedIds = processed,
+                            stats = updatedStats
+                        )
+                    }
+                }
+            }
+
+            loadNextBatch()
         }
     }
 
@@ -567,6 +648,19 @@ class OrganizeViewModel(
                         topCardSimilarGroup = topGroup
                     )
                 }
+            }
+        }
+    }
+
+    companion object {
+        /**
+         * 显式构造工厂：经 CreationExtras 取 Application 直接实例化，
+         * 规避默认工厂对多参数构造签名的反射匹配失败。
+         */
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]!!
+                OrganizeViewModel(app)
             }
         }
     }

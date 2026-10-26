@@ -13,7 +13,11 @@ import android.provider.MediaStore
 import androidx.annotation.OptIn
 import androidx.exifinterface.media.ExifInterface
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import androidx.media3.common.util.UnstableApi
 import androidx.media3.transformer.Composition
 import androidx.media3.transformer.DefaultEncoderFactory
@@ -32,6 +36,7 @@ import com.jian.relive.feature.compress.model.CompressionResult
 import com.jian.relive.feature.compress.model.CompressionSummary
 import com.jian.relive.feature.compress.model.CompressionSummaryItem
 import com.jian.relive.feature.compress.model.ImageQualityOption
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -48,7 +53,11 @@ import kotlin.coroutines.resume
 import kotlin.math.max
 import kotlin.math.roundToInt
 
-class CompressViewModel(application: Application) : AndroidViewModel(application) {
+class CompressViewModel(
+    application: Application,
+    private val ioDispatcher: CoroutineDispatcher = Dispatchers.IO,
+    private val mainDispatcher: CoroutineDispatcher = Dispatchers.Main
+) : AndroidViewModel(application) {
 
     private val context: Context get() = getApplication()
     val prefs = PreferencesManager(context)
@@ -253,7 +262,7 @@ class CompressViewModel(application: Application) : AndroidViewModel(application
                     return@forEach
                 }
 
-                val outputUri = withContext(Dispatchers.IO) {
+                val outputUri = withContext(ioDispatcher) {
                     saveCompressedImage(tempFile, item.displayName, item.dateAdded, item.uri)
                 }
                 val outputSize = tempFile.length()
@@ -347,7 +356,7 @@ class CompressViewModel(application: Application) : AndroidViewModel(application
 
     fun warmVideos(visibleVideos: List<MediaItem>) {
         val targets = visibleVideos.take(40)
-        viewModelScope.launch(Dispatchers.IO) {
+        viewModelScope.launch(ioDispatcher) {
             MediaAnalysisManager.warmVideoThumbs(context, targets)
             val map = _videoDurationMap.value.toMutableMap()
 
@@ -433,7 +442,7 @@ class CompressViewModel(application: Application) : AndroidViewModel(application
                     return@forEach
                 }
 
-                val outputUri = withContext(Dispatchers.IO) {
+                val outputUri = withContext(ioDispatcher) {
                     saveCompressedVideo(tempFile, item.displayName, item.dateAdded)
                 }
                 val outputSize = tempFile.length()
@@ -507,7 +516,7 @@ class CompressViewModel(application: Application) : AndroidViewModel(application
         maxSizePx: Int,
         quality: Int,
         onProgress: (Float) -> Unit
-    ): File? = withContext(Dispatchers.IO) {
+    ): File? = withContext(ioDispatcher) {
         val resolver = context.contentResolver
         val boundsOptions = BitmapFactory.Options().apply { inJustDecodeBounds = true }
         resolver.openInputStream(item.uri)?.use { stream ->
@@ -584,7 +593,7 @@ class CompressViewModel(application: Application) : AndroidViewModel(application
         originalName: String,
         originalDateAdded: Long,
         originalUri: Uri
-    ): Uri? = withContext(Dispatchers.IO) {
+    ): Uri? = withContext(ioDispatcher) {
         val resolver = context.contentResolver
         val baseName = if (originalName.isBlank()) "image_${System.currentTimeMillis()}" else originalName.substringBeforeLast(".")
         val fileName = "${baseName}_compressed.jpg"
@@ -670,7 +679,7 @@ class CompressViewModel(application: Application) : AndroidViewModel(application
             .build()
 
         var progressJob: Job? = null
-        progressJob = viewModelScope.launch(Dispatchers.Main) {
+        progressJob = viewModelScope.launch(mainDispatcher) {
             val progressHolder = androidx.media3.transformer.ProgressHolder()
             while (isActive) {
                 val state = transformer.getProgress(progressHolder)
@@ -726,7 +735,7 @@ class CompressViewModel(application: Application) : AndroidViewModel(application
         tempFile: File,
         originalName: String,
         originalDateAdded: Long
-    ): Uri? = withContext(Dispatchers.IO) {
+    ): Uri? = withContext(ioDispatcher) {
         val resolver = context.contentResolver
         val baseName = if (originalName.isBlank()) "video_${System.currentTimeMillis()}" else originalName.substringBeforeLast(".")
         val fileName = "${baseName}_compressed.mp4"
@@ -761,7 +770,7 @@ class CompressViewModel(application: Application) : AndroidViewModel(application
         uri
     }
 
-    private suspend fun loadVideoDurationMs(uri: Uri): Long? = withContext(Dispatchers.IO) {
+    private suspend fun loadVideoDurationMs(uri: Uri): Long? = withContext(ioDispatcher) {
         val retriever = MediaMetadataRetriever()
         try {
             retriever.setDataSource(context, uri)
@@ -789,5 +798,18 @@ class CompressViewModel(application: Application) : AndroidViewModel(application
             option.fallbackVideoBitrate
         }
         return target.coerceAtLeast(option.minVideoBitrate)
+    }
+
+    companion object {
+        /**
+         * 显式构造工厂：经 CreationExtras 取 Application 直接实例化，
+         * 规避默认工厂对多参数构造签名的反射匹配失败。
+         */
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]!!
+                CompressViewModel(app)
+            }
+        }
     }
 }

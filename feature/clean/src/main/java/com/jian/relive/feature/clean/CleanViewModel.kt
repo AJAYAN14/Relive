@@ -5,7 +5,11 @@ import android.content.Context
 import android.content.IntentSender
 import android.net.Uri
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.jian.relive.core.media.FileOperationManager
 import com.jian.relive.core.media.MediaAnalysisManager
 import com.jian.relive.core.media.MediaRepository
@@ -17,6 +21,7 @@ import com.jian.relive.feature.clean.model.LowQualityReason
 import com.jian.relive.feature.clean.model.SimilarPhotoGroup
 import com.jian.relive.feature.clean.model.UndoCleanAction
 import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -36,7 +41,8 @@ import kotlin.math.abs
  * 响应式编排端侧 dHash 相似照片排重聚类与低质照片多维度检测，管理批量清理与回滚撤销事务。
  */
 class CleanViewModel(
-    application: Application
+    application: Application,
+    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : AndroidViewModel(application) {
 
     private val context: Context get() = getApplication()
@@ -116,7 +122,7 @@ class CleanViewModel(
         _uiState.update { it.copy(isScanning = false) }
     }
 
-    private suspend fun refreshGroups(photos: List<MediaItem>, force: Boolean) = withContext(Dispatchers.Default) {
+    private suspend fun refreshGroups(photos: List<MediaItem>, force: Boolean) = withContext(defaultDispatcher) {
         val currentIgnored = ignoredIds.toSet()
 
         val groups = findSimilarPhotoGroups(photos, currentIgnored)
@@ -374,6 +380,17 @@ class CleanViewModel(
     }
 
     companion object {
+        /**
+         * 显式构造工厂：经 CreationExtras 取 Application 直接实例化，
+         * 规避默认工厂对多参数构造签名的反射匹配失败。
+         */
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]!!
+                CleanViewModel(app)
+            }
+        }
+
         private const val SIMILARITY_THRESHOLD = 7
         private const val TIME_WINDOW_SEC = 120
         private const val MIN_FILE_SIZE_BYTES = 50 * 1024L

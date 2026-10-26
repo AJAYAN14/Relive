@@ -81,6 +81,7 @@ fun OrganizeCardStack(
     onSwipeRight: (MediaItem) -> Unit,
     onSwipeUp: (MediaItem) -> Unit,
     onDetail: (MediaItem) -> Unit = {},
+    onLongClick: (MediaItem) -> Unit = {},
     onClearUndoAnimation: () -> Unit = {}
 ) {
     if (items.isEmpty()) return
@@ -106,6 +107,7 @@ fun OrganizeCardStack(
                 onSwipeRight = { onSwipeRight(item) },
                 onSwipeUp = { onSwipeUp(item) },
                 onDetail = { onDetail(item) },
+                onLongClick = { onLongClick(item) },
                 onClearUndoAnimation = onClearUndoAnimation
             )
         }
@@ -122,6 +124,7 @@ private fun StackCardItem(
     onSwipeRight: () -> Unit,
     onSwipeUp: () -> Unit,
     onDetail: () -> Unit,
+    onLongClick: () -> Unit,
     onClearUndoAnimation: () -> Unit
 ) {
     val haptic = LocalHapticFeedback.current
@@ -277,7 +280,8 @@ private fun StackCardItem(
             .pointerInput(isTopCard) {
                 if (!isTopCard || isExpanded) return@pointerInput
                 detectTapGestures(
-                    onTap = { onDetail() }
+                    onTap = { onDetail() },
+                    onLongPress = { onLongClick() }
                 )
             }
     ) {

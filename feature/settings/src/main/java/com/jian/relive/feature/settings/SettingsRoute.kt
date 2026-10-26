@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.compose.composable
 import com.jian.relive.feature.settings.ui.LanguageScreen
@@ -128,38 +129,34 @@ fun NavGraphBuilder.settingsGraph(
  * 兼容旧版入口单路由注册函数。
  */
 fun NavGraphBuilder.settingsScreen(
-    viewModel: SettingsViewModel? = null,
     onNavigateToLanguage: () -> Unit = {},
     onNavigateToPrivacy: () -> Unit = {},
     onNavigateToOpenSource: () -> Unit = {},
     onBack: () -> Unit = {}
 ) {
     composable<SettingsRoute> {
-        if (viewModel != null) {
-            val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-            SettingsScreen(
-                batchSize = uiState.batchSize,
-                queueOrder = uiState.queueOrder,
-                muteVideos = uiState.muteVideos,
-                soundEffectsEnabled = uiState.soundEffectsEnabled,
-                hapticsEnabled = uiState.hapticsEnabled,
-                avatarType = uiState.avatarType,
-                currentLanguage = uiState.language,
-                onBatchSizeChange = viewModel::setBatchSize,
-                onQueueOrderChange = viewModel::setQueueOrder,
-                onMuteVideosChange = viewModel::setMuteVideos,
-                onSoundEffectsChange = viewModel::setSoundEffectsEnabled,
-                onHapticsEnabledChange = viewModel::setHapticsEnabled,
-                onAvatarChange = viewModel::setAvatarType,
-                onReleaseKept = viewModel::releaseKeptPhotos,
-                onLanguageClick = onNavigateToLanguage,
-                onPrivacyClick = onNavigateToPrivacy,
-                onOpenSourceClick = onNavigateToOpenSource,
-                onBack = onBack
-            )
-        } else {
-            SettingsRoutePlaceholder()
-        }
+        val viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+        SettingsScreen(
+            batchSize = uiState.batchSize,
+            queueOrder = uiState.queueOrder,
+            muteVideos = uiState.muteVideos,
+            soundEffectsEnabled = uiState.soundEffectsEnabled,
+            hapticsEnabled = uiState.hapticsEnabled,
+            avatarType = uiState.avatarType,
+            currentLanguage = uiState.language,
+            onBatchSizeChange = viewModel::setBatchSize,
+            onQueueOrderChange = viewModel::setQueueOrder,
+            onMuteVideosChange = viewModel::setMuteVideos,
+            onSoundEffectsChange = viewModel::setSoundEffectsEnabled,
+            onHapticsEnabledChange = viewModel::setHapticsEnabled,
+            onAvatarChange = viewModel::setAvatarType,
+            onReleaseKept = viewModel::releaseKeptPhotos,
+            onLanguageClick = onNavigateToLanguage,
+            onPrivacyClick = onNavigateToPrivacy,
+            onOpenSourceClick = onNavigateToOpenSource,
+            onBack = onBack
+        )
     }
 }
 

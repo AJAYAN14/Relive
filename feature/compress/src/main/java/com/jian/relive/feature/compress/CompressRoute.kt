@@ -45,7 +45,7 @@ fun NavGraphBuilder.compressScreen(
     onBack: () -> Unit = {}
 ) {
     composable<CompressRoute> {
-        val viewModel: CompressViewModel = viewModel()
+        val viewModel: CompressViewModel = viewModel(factory = CompressViewModel.Factory)
         CompressScreen(
             viewModel = viewModel,
             onBack = onBack

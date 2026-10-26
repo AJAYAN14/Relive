@@ -211,6 +211,39 @@ object MediaAnalysisManager {
     }
 
     /**
+     * 依据感知哈希汉明距离统计媒体列表中的相似照片张数。
+     */
+    fun countSimilarPhotos(sortedPhotos: List<MediaItem>, ignoredIds: Set<Long> = emptySet()): Int {
+        var count = 0
+        val visited = HashSet<Long>(ignoredIds)
+        val photos = sortedPhotos.filter { it.isPhoto }.sortedByDescending { it.dateAdded }
+
+        for (i in photos.indices) {
+            val current = photos[i]
+            if (visited.contains(current.id)) continue
+            val currentHash = getAnalysis(current.id)?.dHash ?: continue
+            if (currentHash == 0L) continue
+
+            for (j in i + 1 until photos.size) {
+                val next = photos[j]
+                if (visited.contains(next.id)) continue
+                if (kotlin.math.abs(current.dateAdded - next.dateAdded) > 120) break
+                val nextHash = getAnalysis(next.id)?.dHash ?: continue
+                if (java.lang.Long.bitCount(currentHash xor nextHash) <= 7) {
+                    val isLiveVsStatic = current.isLivePhoto != next.isLivePhoto
+                    val isSameMoment = kotlin.math.abs(current.dateAdded - next.dateAdded) <= 2
+                    if (isLiveVsStatic && isSameMoment) continue
+                    count += 2
+                    visited.add(current.id)
+                    visited.add(next.id)
+                    break
+                }
+            }
+        }
+        return count
+    }
+
+    /**
      * 启动全量媒体端侧分析后台批处理任务。
      */
     fun startScan(context: Context, items: List<MediaItem>) {

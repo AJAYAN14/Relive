@@ -72,7 +72,8 @@ data class OrganizeUiState(
 
 ### 2.2 调度器强制依赖注入（禁止硬编码 Dispatchers）
 - **严禁在 ViewModel、Repository、DataSource 中直接写死 `Dispatchers.IO` 或 `Dispatchers.Default`**。
-- **强制规范**：所有协程调度器必须通过 Hilt/DI 注入（如 `@IoDispatcher coroutineDispatcher: CoroutineDispatcher`），保证单元测试可通过 `StandardTestDispatcher` 实现毫秒级精确验证。
+- **强制规范**：所有协程调度器必须通过构造参数注入（可带默认值），保证单元测试可通过 `StandardTestDispatcher` 实现毫秒级精确验证。
+- **强制配套（防反射闪退）**：凡构造参数带默认值或非 `(Application)` / `()` 标准签名的 ViewModel，**必须**通过 `viewModelFactory { initializer { ... } }` 显式工厂构造（`companion object` 暴露 `Factory` + Route 层 `viewModel(factory = XxxViewModel.Factory)`），**严禁**依赖默认 `AndroidViewModelFactory` 反射构造——该反射仅匹配 `(Application)` / `()` 两种签名，带默认参数的 Kotlin 构造函数不会生成对应 Java 重载，将直接触发运行时 `NoSuchMethodException` 闪退。
 
 ### 2.3 Compose 消费数据流强制生命周期感知（省电防偷跑）
 - Compose 收集 ViewModel 中的 `StateFlow` 时，**强制使用 `collectAsStateWithLifecycle()`**。
@@ -184,7 +185,7 @@ Relive 运行在 Android 15 原生环境上，享受纯粹的现代 API 规范�
 | 编号 | 检查项 | 违规判据（命中即阻断） | 阻断级别 |
 |---|---|---|---|
 | **E1** | 全局野协程 | 代码中出现 `GlobalScope` | 🔴 阻断 |
-| **E2** | 调度器硬编码 | ViewModel / Repository 中直接使用 `Dispatchers.IO` / `Dispatchers.Default` | 🔴 阻断 |
+| **E2** | 调度器硬编码 / ViewModel 反射构造 | ViewModel / Repository 中直接使用 `Dispatchers.IO` / `Dispatchers.Default`；或非标准构造签名的 ViewModel 未经显式 factory 构造 | 🔴 阻断 |
 | **E3** | 不安全 Flow 收集 | Composable 中直接使用 `.collectAsState()` | 🔴 阻断 |
 | **E4** | 列表缺失稳定 Key | `LazyColumn` / `LazyVerticalGrid` 的 `items()` 未指定 `key` 参数 | 🔴 阻断 |
 | **E5** | 绝对路径越权访问 | 媒体操作中直接使用 `File("/storage/` 或硬编码路径 | 🔴 阻断 |

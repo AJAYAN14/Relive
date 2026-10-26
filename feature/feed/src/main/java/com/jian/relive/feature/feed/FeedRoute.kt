@@ -42,12 +42,16 @@ import com.jian.relive.feature.feed.ui.FeedItemInfoOverlay
 import com.jian.relive.feature.feed.ui.FeedSoundControl
 import com.jian.relive.feature.feed.ui.FeedVolumeToastBadge
 import com.jian.relive.feature.feed.ui.LiveFeedPlayer
+import com.jian.relive.feature.feed.ui.LikesView
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 
 @Serializable
 data object FeedRoute
+
+@Serializable
+data object LikesRoute
 
 /**
  * 在导航图中注册实况与视频流媒体页面入口。
@@ -56,10 +60,31 @@ fun NavGraphBuilder.feedScreen(
     onBack: () -> Unit = {}
 ) {
     composable<FeedRoute> {
-        val viewModel: FeedViewModel = viewModel()
+        val viewModel: FeedViewModel = viewModel(factory = FeedViewModel.Factory)
         FeedRoute(
             viewModel = viewModel,
             onBack = onBack
+        )
+    }
+}
+
+/**
+ * 在导航图中注册喜欢相片沉浸式全屏浏览入口。
+ */
+fun NavGraphBuilder.likesScreen(
+    onBack: () -> Unit = {}
+) {
+    composable<LikesRoute> {
+        val viewModel: FeedViewModel = viewModel(factory = FeedViewModel.Factory)
+        val uiState by viewModel.uiState.collectAsStateWithLifecycle()
+        val likedItems = remember(uiState.likedIds, viewModel.allMedia) {
+            viewModel.getLikedMediaItems()
+        }
+        LikesView(
+            likedItems = likedItems,
+            allMedia = viewModel.allMedia,
+            onBack = onBack,
+            onUnlike = { viewModel.unlikeItem(it) }
         )
     }
 }

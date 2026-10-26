@@ -3,13 +3,18 @@ package com.jian.relive.feature.stats
 import android.app.Application
 import android.content.Context
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.jian.relive.core.common.preferences.PreferencesManager
 import com.jian.relive.core.media.MediaRepository
 import com.jian.relive.core.model.MediaItem
 import com.jian.relive.feature.stats.model.ShootingStatsData
 import com.jian.relive.feature.stats.model.StatsPeriod
 import com.jian.relive.feature.stats.model.StatsUiState
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -28,7 +33,8 @@ import java.util.Locale
  * 聚合设备图库的时间轴数据、时长、拍摄足迹与贡献热力图矩阵。
  */
 class StatsViewModel(
-    application: Application
+    application: Application,
+    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : AndroidViewModel(application) {
 
     private val context: Context get() = getApplication()
@@ -150,7 +156,7 @@ class StatsViewModel(
         }
     }
 
-    private suspend fun computeStats() = withContext(Dispatchers.Default) {
+    private suspend fun computeStats() = withContext(defaultDispatcher) {
         val currentState = _uiState.value
         val period = currentState.period
         val targetYear = currentState.targetYear
@@ -274,6 +280,19 @@ class StatsViewModel(
                 val (name, duration) = list[index]
                 val ratio = String.format(Locale.getDefault(), "%.1f", totalDurationMins.toFloat() / duration)
                 if (isZh) "相当于 $ratio 部《$name》" else "Equiv. to $ratio x $name"
+            }
+        }
+    }
+
+    companion object {
+        /**
+         * 显式构造工厂：经 CreationExtras 取 Application 直接实例化，
+         * 规避默认工厂对多参数构造签名的反射匹配失败。
+         */
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]!!
+                StatsViewModel(app)
             }
         }
     }

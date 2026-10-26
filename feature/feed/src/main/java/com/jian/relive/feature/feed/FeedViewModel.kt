@@ -4,7 +4,10 @@ import android.app.Application
 import android.content.Context
 import android.content.IntentSender
 import androidx.lifecycle.AndroidViewModel
+import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.jian.relive.core.common.preferences.PreferencesManager
 import com.jian.relive.core.media.FileOperationManager
 import com.jian.relive.core.media.MediaRepository
@@ -12,6 +15,7 @@ import com.jian.relive.core.media.MotionPhotoHelper
 import com.jian.relive.core.model.MediaItem
 import com.jian.relive.feature.feed.model.FeedFilterType
 import com.jian.relive.feature.feed.model.FeedUiState
+import kotlinx.coroutines.CoroutineDispatcher
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -28,7 +32,8 @@ import kotlinx.coroutines.withContext
  * 管理动态照片与视频列表过滤筛选、常驻静音策略同步、喜欢状态与安全废纸篓删除。
  */
 class FeedViewModel(
-    application: Application
+    application: Application,
+    private val defaultDispatcher: CoroutineDispatcher = Dispatchers.Default
 ) : AndroidViewModel(application) {
 
     private val context: Context get() = getApplication()
@@ -48,6 +53,27 @@ class FeedViewModel(
 
     init {
         loadMedia()
+    }
+
+    val allMedia: List<MediaItem>
+        get() = cachedAllMedia
+
+    /**
+     * 获取当前已被收藏喜欢的相片集合。
+     */
+    fun getLikedMediaItems(): List<MediaItem> {
+        val liked = prefs.likedIds.toSet()
+        return cachedAllMedia.filter { liked.contains(it.id) }
+    }
+
+    /**
+     * 取消指定媒体项目的收藏喜欢状态。
+     */
+    fun unlikeItem(id: Long) {
+        val currentLiked = prefs.likedIds.toMutableSet()
+        currentLiked.remove(id)
+        prefs.likedIds = currentLiked
+        _uiState.update { it.copy(likedIds = currentLiked.toSet()) }
     }
 
     /**
@@ -158,7 +184,7 @@ class FeedViewModel(
         }
     }
 
-    private suspend fun applyFilter() = withContext(Dispatchers.Default) {
+    private suspend fun applyFilter() = withContext(defaultDispatcher) {
         val filter = _uiState.value.filterType
         val filtered = when (filter) {
             FeedFilterType.ALL -> cachedAllMedia.filter { it.type == "video" || it.isLivePhoto }
@@ -167,5 +193,18 @@ class FeedViewModel(
         }.sortedByDescending { it.dateAdded }
 
         _uiState.update { it.copy(feedItems = filtered) }
+    }
+
+    companion object {
+        /**
+         * 显式构造工厂：经 CreationExtras 取 Application 直接实例化，
+         * 规避默认工厂对多参数构造签名的反射匹配失败。
+         */
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]!!
+                FeedViewModel(app)
+            }
+        }
     }
 }

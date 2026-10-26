@@ -61,4 +61,22 @@
     <string name="organize_create">Create</string>
     <string name="organize_move_to">Moved to %1$s</string>
     <string name="organize_delete_batch_success">Items safely deleted</string>
+    <string name="organize_deep_title">Deep Organize</string>
+    <string name="organize_deep_scanning">Scanning Gallery…</string>
+    <string name="organize_deep_complete">Scan Complete</string>
+    <string name="organize_deep_desc_detailed">This may take about %1$d minutes depending on your gallery size. You can exit and let it run in the background.</string>
+    <string name="organize_deep_similar_title">Similar Photos</string>
+    <string name="organize_deep_similar_subtitle">Find and clean duplicate shots</string>
+    <string name="organize_deep_low_quality_title">Low Quality</string>
+    <string name="organize_deep_low_quality_subtitle">Blurry, dark, and bad photos</string>
+    <string name="organize_deep_video_compress_title">Video Compression</string>
+    <string name="organize_deep_video_compress_subtitle">Reduce size with minimal quality loss</string>
+    <string name="organize_deep_image_compress_title">Photo Compression</string>
+    <string name="organize_deep_image_compress_subtitle">Compress large photos to save space</string>
+    <string name="organize_release_dialog_title">Release Kept Photos</string>
+    <string name="organize_release_dialog_content">This will reset the photos you kept in this category, allowing you to review them again. Liked, trashed, and moved photos will not be affected.</string>
+    <string name="organize_release_kept_button">Release Kept Photos</string>
+    <string name="organize_released_toast">Kept photos released</string>
+    <string name="organize_view_likes_button">View Favorites</string>
+    <string name="organize_confirm">Confirm</string>
 </resources>

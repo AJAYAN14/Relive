@@ -2,6 +2,10 @@ package com.jian.relive.feature.settings
 
 import android.content.Context
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.ViewModelProvider
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.initializer
+import androidx.lifecycle.viewmodel.viewModelFactory
 import com.jian.relive.core.common.language.AppLanguage
 import com.jian.relive.core.common.preferences.PreferencesManager
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -119,5 +123,18 @@ class SettingsViewModel(
             preferencesManager.stats = newStats
         }
         onComplete()
+    }
+
+    companion object {
+        /**
+         * 显式构造工厂：经 CreationExtras 取 Application 组装 PreferencesManager，
+         * 规避默认工厂对非 Application 构造签名的反射匹配失败。
+         */
+        val Factory: ViewModelProvider.Factory = viewModelFactory {
+            initializer {
+                val app = this[ViewModelProvider.AndroidViewModelFactory.APPLICATION_KEY]!!
+                SettingsViewModel(PreferencesManager(app))
+            }
+        }
     }
 }
