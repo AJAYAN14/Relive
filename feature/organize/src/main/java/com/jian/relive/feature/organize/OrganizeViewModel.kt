@@ -59,6 +59,17 @@ class OrganizeViewModel(
         MediaAnalysisManager.init(context)
         loadInitialPreferences()
         observeMediaRepository()
+        loadMedia()
+    }
+
+    /**
+     * 加载设备图库媒体数据。
+     */
+    fun loadMedia() {
+        viewModelScope.launch(ioDispatcher) {
+            _uiState.update { it.copy(isLoading = true) }
+            mediaRepository.loadMedia(context)
+        }
     }
 
     private fun loadInitialPreferences() {
@@ -442,7 +453,7 @@ class OrganizeViewModel(
                     it.copy(
                         displayMedia = nextBatch,
                         currentBatchTotal = nextBatch.size,
-                        isFullAlbumDone = remaining.isEmpty(),
+                        isFullAlbumDone = allMediaList.isNotEmpty() && remaining.isEmpty(),
                         remainingCount = remainingAfterBatch,
                         isLoading = false,
                         undoStack = emptyList()
