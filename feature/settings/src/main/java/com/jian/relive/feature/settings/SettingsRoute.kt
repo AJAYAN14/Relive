@@ -53,17 +53,21 @@ fun NavGraphBuilder.settingsGraph(
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
         SettingsScreen(
             batchSize = uiState.batchSize,
+            autoAdvanceBatch = uiState.autoAdvanceBatch,
             queueOrder = uiState.queueOrder,
             muteVideos = uiState.muteVideos,
             soundEffectsEnabled = uiState.soundEffectsEnabled,
             hapticsEnabled = uiState.hapticsEnabled,
+            darkThemeEnabled = uiState.darkThemeEnabled,
             avatarType = uiState.avatarType,
             currentLanguage = uiState.language,
             onBatchSizeChange = viewModel::setBatchSize,
+            onAutoAdvanceBatchChange = viewModel::setAutoAdvanceBatch,
             onQueueOrderChange = viewModel::setQueueOrder,
             onMuteVideosChange = viewModel::setMuteVideos,
             onSoundEffectsChange = viewModel::setSoundEffectsEnabled,
             onHapticsEnabledChange = viewModel::setHapticsEnabled,
+            onDarkThemeChange = viewModel::setDarkThemeEnabled,
             onAvatarChange = viewModel::setAvatarType,
             onReleaseKept = viewModel::releaseKeptPhotos,
             onLanguageClick = onNavigateToLanguage,
@@ -106,9 +110,18 @@ fun NavGraphBuilder.settingsGraph(
  */
 fun NavGraphBuilder.settingsScreen(
     onNavigateToLanguage: () -> Unit = {},
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    enterTransition: (androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.EnterTransition?)? = null,
+    exitTransition: (androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.ExitTransition?)? = null,
+    popEnterTransition: (androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.EnterTransition?)? = null,
+    popExitTransition: (androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.ExitTransition?)? = null
 ) {
-    composable<SettingsRoute> {
+    composable<SettingsRoute>(
+        enterTransition = enterTransition,
+        exitTransition = exitTransition,
+        popEnterTransition = popEnterTransition,
+        popExitTransition = popExitTransition
+    ) {
         val viewModel: SettingsViewModel = viewModel(factory = SettingsViewModel.Factory)
         val uiState by viewModel.uiState.collectAsStateWithLifecycle()
         SettingsScreen(
@@ -117,6 +130,7 @@ fun NavGraphBuilder.settingsScreen(
             muteVideos = uiState.muteVideos,
             soundEffectsEnabled = uiState.soundEffectsEnabled,
             hapticsEnabled = uiState.hapticsEnabled,
+            darkThemeEnabled = uiState.darkThemeEnabled,
             avatarType = uiState.avatarType,
             currentLanguage = uiState.language,
             onBatchSizeChange = viewModel::setBatchSize,
@@ -124,6 +138,7 @@ fun NavGraphBuilder.settingsScreen(
             onMuteVideosChange = viewModel::setMuteVideos,
             onSoundEffectsChange = viewModel::setSoundEffectsEnabled,
             onHapticsEnabledChange = viewModel::setHapticsEnabled,
+            onDarkThemeChange = viewModel::setDarkThemeEnabled,
             onAvatarChange = viewModel::setAvatarType,
             onReleaseKept = viewModel::releaseKeptPhotos,
             onLanguageClick = onNavigateToLanguage,

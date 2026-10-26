@@ -9,7 +9,12 @@
     <string name="settings_mute_videos">Mute Videos by Default</string>
     <string name="settings_sound_effects">Sound Effects</string>
     <string name="settings_haptics">Haptic Feedback</string>
+    <string name="settings_dark_theme">Dark Theme</string>
     <string name="settings_batch_size">Batch Size</string>
+    <string name="settings_batch_flow_mode">Batch Transition Mode</string>
+    <string name="settings_batch_flow_pause">Pause Per Batch</string>
+    <string name="settings_batch_flow_continuous">Continuous Flow</string>
+    <string name="settings_batch_flow_desc">Pause for batch review or seamlessly load the next batch</string>
     <string name="settings_queue_order">Queue Order</string>
     <string name="settings_order_random">Random</string>
     <string name="settings_order_time">By Date</string>

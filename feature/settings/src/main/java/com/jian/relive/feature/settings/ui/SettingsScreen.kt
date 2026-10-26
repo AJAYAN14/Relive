@@ -15,7 +15,6 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
@@ -29,12 +28,10 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Slider
 import androidx.compose.material3.SliderDefaults
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
+import com.jian.relive.core.ui.component.liquid.LiquidToggle
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -74,17 +71,21 @@ import kotlin.math.roundToInt
 @Composable
 fun SettingsScreen(
     batchSize: Int,
+    autoAdvanceBatch: Boolean = false,
     queueOrder: String,
     muteVideos: Boolean,
     soundEffectsEnabled: Boolean,
     hapticsEnabled: Boolean,
+    darkThemeEnabled: Boolean = false,
     avatarType: String,
     currentLanguage: AppLanguage,
     onBatchSizeChange: (Int) -> Unit,
+    onAutoAdvanceBatchChange: (Boolean) -> Unit = {},
     onQueueOrderChange: (String) -> Unit,
     onMuteVideosChange: (Boolean) -> Unit,
     onSoundEffectsChange: (Boolean) -> Unit,
     onHapticsEnabledChange: (Boolean) -> Unit,
+    onDarkThemeChange: (Boolean) -> Unit = {},
     onAvatarChange: (String) -> Unit,
     onReleaseKept: () -> Unit,
     onLanguageClick: () -> Unit,
@@ -222,18 +223,12 @@ fun SettingsScreen(
                     color = ReliveBlack,
                     modifier = Modifier.weight(1f)
                 )
-                Switch(
+                LiquidToggle(
                     checked = muteVideos,
                     onCheckedChange = {
                         if (hapticsAllowed) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         onMuteVideosChange(it)
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = ReliveWhite,
-                        checkedTrackColor = RelivePrimary,
-                        uncheckedThumbColor = ReliveWhite,
-                        uncheckedTrackColor = ReliveGray500.copy(alpha = 0.3f)
-                    )
+                    }
                 )
             }
 
@@ -253,18 +248,12 @@ fun SettingsScreen(
                     color = ReliveBlack,
                     modifier = Modifier.weight(1f)
                 )
-                Switch(
+                LiquidToggle(
                     checked = soundEffectsEnabled,
                     onCheckedChange = {
                         if (hapticsAllowed) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         onSoundEffectsChange(it)
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = ReliveWhite,
-                        checkedTrackColor = RelivePrimary,
-                        uncheckedThumbColor = ReliveWhite,
-                        uncheckedTrackColor = ReliveGray500.copy(alpha = 0.3f)
-                    )
+                    }
                 )
             }
 
@@ -284,18 +273,37 @@ fun SettingsScreen(
                     color = ReliveBlack,
                     modifier = Modifier.weight(1f)
                 )
-                Switch(
+                LiquidToggle(
                     checked = hapticsEnabled,
                     onCheckedChange = {
                         if (hapticsAllowed) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                         onHapticsEnabledChange(it)
-                    },
-                    colors = SwitchDefaults.colors(
-                        checkedThumbColor = ReliveWhite,
-                        checkedTrackColor = RelivePrimary,
-                        uncheckedThumbColor = ReliveWhite,
-                        uncheckedTrackColor = ReliveGray500.copy(alpha = 0.3f)
-                    )
+                    }
+                )
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(staggeredRevealModifier(6)),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = stringResource(R.string.settings_dark_theme),
+                    fontSize = 18.sp,
+                    fontWeight = FontWeight.Bold,
+                    color = ReliveBlack,
+                    modifier = Modifier.weight(1f)
+                )
+                LiquidToggle(
+                    checked = darkThemeEnabled,
+                    onCheckedChange = {
+                        if (hapticsAllowed) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onDarkThemeChange(it)
+                    }
                 )
             }
 
@@ -344,6 +352,71 @@ fun SettingsScreen(
                         )
                     )
                 }
+            }
+
+            Spacer(modifier = Modifier.height(32.dp))
+
+            Text(
+                text = stringResource(R.string.settings_batch_flow_mode),
+                fontSize = 18.sp,
+                fontWeight = FontWeight.Bold,
+                color = ReliveBlack,
+                modifier = Modifier.then(staggeredRevealModifier(9))
+            )
+            Spacer(modifier = Modifier.height(6.dp))
+            Text(
+                text = stringResource(R.string.settings_batch_flow_desc),
+                fontSize = 13.sp,
+                color = ReliveGray500,
+                modifier = Modifier.then(staggeredRevealModifier(9))
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .then(staggeredRevealModifier(10)),
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                FilterChip(
+                    selected = !autoAdvanceBatch,
+                    onClick = {
+                        if (hapticsAllowed) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onAutoAdvanceBatchChange(false)
+                    },
+                    label = { Text(stringResource(R.string.settings_batch_flow_pause)) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = RelivePrimary,
+                        selectedLabelColor = ReliveWhite,
+                        containerColor = ReliveGray100,
+                        labelColor = ReliveBlack
+                    ),
+                    border = null,
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier
+                        .height(48.dp)
+                        .bounceClick()
+                )
+
+                FilterChip(
+                    selected = autoAdvanceBatch,
+                    onClick = {
+                        if (hapticsAllowed) haptic.performHapticFeedback(HapticFeedbackType.LongPress)
+                        onAutoAdvanceBatchChange(true)
+                    },
+                    label = { Text(stringResource(R.string.settings_batch_flow_continuous)) },
+                    colors = FilterChipDefaults.filterChipColors(
+                        selectedContainerColor = RelivePrimary,
+                        selectedLabelColor = ReliveWhite,
+                        containerColor = ReliveGray100,
+                        labelColor = ReliveBlack
+                    ),
+                    border = null,
+                    shape = RoundedCornerShape(20.dp),
+                    modifier = Modifier
+                        .height(48.dp)
+                        .bounceClick()
+                )
             }
 
             Spacer(modifier = Modifier.height(32.dp))

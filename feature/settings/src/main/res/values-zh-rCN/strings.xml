@@ -9,7 +9,12 @@
     <string name="settings_mute_videos">视频默认静音</string>
     <string name="settings_sound_effects">音效</string>
     <string name="settings_haptics">触觉震动反馈</string>
+    <string name="settings_dark_theme">深色模式</string>
     <string name="settings_batch_size">整理批次数量</string>
+    <string name="settings_batch_flow_mode">整理流转节奏</string>
+    <string name="settings_batch_flow_pause">分组停顿</string>
+    <string name="settings_batch_flow_continuous">自动连续</string>
+    <string name="settings_batch_flow_desc">刷完一组后展示小结卡片，或自动无缝加载下一批</string>
     <string name="settings_queue_order">排序模式</string>
     <string name="settings_order_random">随机乱序</string>
     <string name="settings_order_time">按拍摄时间</string>

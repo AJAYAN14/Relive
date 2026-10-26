@@ -22,6 +22,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -120,9 +121,18 @@ fun NavGraphBuilder.organizeScreen(
     onNavigateToClean: () -> Unit = {},
     onNavigateToCompress: () -> Unit = {},
     onNavigateToLikes: () -> Unit = {},
-    onOverlayActiveChanged: (Boolean) -> Unit = {}
+    onOverlayActiveChanged: (Boolean) -> Unit = {},
+    enterTransition: (androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.EnterTransition?)? = null,
+    exitTransition: (androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.ExitTransition?)? = null,
+    popEnterTransition: (androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.EnterTransition?)? = null,
+    popExitTransition: (androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.ExitTransition?)? = null
 ) {
-    composable<OrganizeRoute> {
+    composable<OrganizeRoute>(
+        enterTransition = enterTransition,
+        exitTransition = exitTransition,
+        popEnterTransition = popEnterTransition,
+        popExitTransition = popExitTransition
+    ) {
         val vmFactory = remember(mediaRepository) {
             if (mediaRepository != null) {
                 OrganizeViewModel.provideFactory(mediaRepository)
@@ -640,13 +650,15 @@ private fun MainOrganizeContent(
             },
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 80.dp)
+                .navigationBarsPadding()
+                .padding(bottom = 100.dp)
         )
 
         Box(
             modifier = Modifier
                 .align(Alignment.BottomStart)
-                .padding(bottom = 24.dp, start = 20.dp)
+                .navigationBarsPadding()
+                .padding(bottom = 100.dp, start = 20.dp)
         ) {
             if (uiState.comboCount > 1) {
                 Box(
@@ -668,7 +680,8 @@ private fun MainOrganizeContent(
         Box(
             modifier = Modifier
                 .align(Alignment.BottomCenter)
-                .padding(bottom = 24.dp)
+                .navigationBarsPadding()
+                .padding(bottom = 100.dp)
         ) {
             AnimatedVisibility(
                 visible = uiState.canUndo,
@@ -703,7 +716,8 @@ private fun MainOrganizeContent(
         Box(
             modifier = Modifier
                 .align(Alignment.BottomEnd)
-                .padding(bottom = 24.dp, end = 20.dp)
+                .navigationBarsPadding()
+                .padding(bottom = 100.dp, end = 20.dp)
         ) {
             AnimatedVisibility(
                 visible = !isFolderDropMode,

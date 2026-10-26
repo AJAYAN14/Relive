@@ -54,6 +54,9 @@
     <string name="organize_delete_review_subtitle">Review items before deleting. Uncheck to keep.</string>
     <string name="organize_cancel">Cancel</string>
     <string name="organize_delete_count">Delete (%1$d)</string>
+    <string name="organize_delete_confirm_title">Confirm Delete</string>
+    <string name="organize_delete_confirm_message">Are you sure you want to delete %1$d selected items? They will be moved to Trash.</string>
+    <string name="organize_delete_confirm_button">Delete</string>
     <string name="organize_clear_month">Clear Month</string>
     <string name="organize_select_specific_month">Select a specific month</string>
     <string name="organize_new_folder">New Album</string>

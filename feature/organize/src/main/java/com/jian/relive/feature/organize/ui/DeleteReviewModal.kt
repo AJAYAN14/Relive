@@ -24,10 +24,12 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -71,6 +73,7 @@ fun DeleteReviewModal(
     }
 
     var selectedIds by remember(pendingTrashIds) { mutableStateOf(pendingTrashIds) }
+    var showConfirmDialog by remember { mutableStateOf(false) }
     val context = LocalContext.current
 
     Box(
@@ -177,7 +180,7 @@ fun DeleteReviewModal(
                 }
 
                 Button(
-                    onClick = { onConfirm(selectedIds) },
+                    onClick = { showConfirmDialog = true },
                     enabled = selectedIds.isNotEmpty(),
                     colors = ButtonDefaults.buttonColors(
                         containerColor = ReliveRed500,
@@ -199,6 +202,48 @@ fun DeleteReviewModal(
                     )
                 }
             }
+        }
+
+        if (showConfirmDialog) {
+            AlertDialog(
+                onDismissRequest = { showConfirmDialog = false },
+                title = {
+                    Text(
+                        text = stringResource(R.string.organize_delete_confirm_title),
+                        fontWeight = FontWeight.Bold,
+                        color = ReliveBlack
+                    )
+                },
+                text = {
+                    Text(
+                        text = stringResource(R.string.organize_delete_confirm_message, selectedIds.size),
+                        color = ReliveGray500
+                    )
+                },
+                confirmButton = {
+                    Button(
+                        onClick = {
+                            showConfirmDialog = false
+                            onConfirm(selectedIds)
+                        },
+                        colors = ButtonDefaults.buttonColors(containerColor = ReliveRed500)
+                    ) {
+                        Text(
+                            text = stringResource(R.string.organize_delete_confirm_button),
+                            color = ReliveWhite
+                        )
+                    }
+                },
+                dismissButton = {
+                    TextButton(onClick = { showConfirmDialog = false }) {
+                        Text(
+                            text = stringResource(R.string.organize_cancel),
+                            color = ReliveBlack
+                        )
+                    }
+                },
+                containerColor = ReliveWhite
+            )
         }
     }
 }

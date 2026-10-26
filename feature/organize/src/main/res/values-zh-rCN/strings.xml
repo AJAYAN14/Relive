@@ -54,6 +54,9 @@
     <string name="organize_delete_review_subtitle">在删除前核对照片。取消勾选以保留。</string>
     <string name="organize_cancel">取消</string>
     <string name="organize_delete_count">删除 (%1$d)</string>
+    <string name="organize_delete_confirm_title">确认删除</string>
+    <string name="organize_delete_confirm_message">确定要删除选中的 %1$d 张照片吗？此操作将移入系统废纸篓。</string>
+    <string name="organize_delete_confirm_button">删除</string>
     <string name="organize_clear_month">清除月份</string>
     <string name="organize_select_specific_month">选择特定月份</string>
     <string name="organize_new_folder">新建相册</string>

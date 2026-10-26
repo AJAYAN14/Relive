@@ -1,10 +1,13 @@
 package com.jian.relive.core.ui.theme
 
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
+
+val LocalDarkTheme = staticCompositionLocalOf { false }
 
 private val ReliveDarkColorScheme = darkColorScheme(
     primary = RelivePrimaryLight,
@@ -46,14 +49,16 @@ private val ReliveLightColorScheme = lightColorScheme(
 
 @Composable
 fun ReliveTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
+    darkTheme: Boolean = false,
     content: @Composable () -> Unit
 ) {
     val colorScheme = if (darkTheme) ReliveDarkColorScheme else ReliveLightColorScheme
 
-    MaterialTheme(
-        colorScheme = colorScheme,
-        typography = ReliveTypography,
-        content = content
-    )
+    CompositionLocalProvider(LocalDarkTheme provides darkTheme) {
+        MaterialTheme(
+            colorScheme = colorScheme,
+            typography = ReliveTypography,
+            content = content
+        )
+    }
 }

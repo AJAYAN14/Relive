@@ -59,9 +59,18 @@ data object LikesRoute
  * 在导航图中注册实况与视频流媒体页面入口。
  */
 fun NavGraphBuilder.feedScreen(
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    enterTransition: (androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.EnterTransition?)? = null,
+    exitTransition: (androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.ExitTransition?)? = null,
+    popEnterTransition: (androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.EnterTransition?)? = null,
+    popExitTransition: (androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.ExitTransition?)? = null
 ) {
-    composable<FeedRoute> {
+    composable<FeedRoute>(
+        enterTransition = enterTransition,
+        exitTransition = exitTransition,
+        popEnterTransition = popEnterTransition,
+        popExitTransition = popExitTransition
+    ) {
         val viewModel: FeedViewModel = viewModel(factory = FeedViewModel.Factory)
         FeedRoute(
             viewModel = viewModel,

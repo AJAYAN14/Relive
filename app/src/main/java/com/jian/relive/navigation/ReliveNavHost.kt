@@ -43,10 +43,54 @@ fun ReliveNavHost(
     onOverlayActiveChanged: (Boolean) -> Unit = {},
     onSplashComplete: () -> Unit = {}
 ) {
+    val mainScreenRoutes = remember {
+        setOf("OrganizeRoute", "FeedRoute", "StatsRoute", "SettingsRoute")
+    }
+
+    fun isMainScreen(route: String?): Boolean {
+        if (route == null) return false
+        return mainScreenRoutes.any { route.contains(it) }
+    }
+
+    val mainEnterTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.EnterTransition? = {
+        val initialRoute = initialState.destination.route
+        val targetRoute = targetState.destination.route
+        HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
+        if (!isMainScreen(initialRoute)) AppTransitions.popEnterTransition()
+        else BottomNavTransition.enterTransition()
+    }
+
+    val mainExitTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.ExitTransition? = {
+        val initialRoute = initialState.destination.route
+        val targetRoute = targetState.destination.route
+        HorizontalNavTransition.exitTransition(initialRoute, targetRoute) ?:
+        if (!isMainScreen(targetRoute)) AppTransitions.exitTransition()
+        else BottomNavTransition.exitTransition()
+    }
+
+    val mainPopEnterTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.EnterTransition? = {
+        val initialRoute = initialState.destination.route
+        val targetRoute = targetState.destination.route
+        HorizontalNavTransition.enterTransition(initialRoute, targetRoute) ?:
+        if (!isMainScreen(initialRoute)) AppTransitions.popEnterTransition()
+        else BottomNavTransition.enterTransition()
+    }
+
+    val mainPopExitTransition: androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.ExitTransition? = {
+        val initialRoute = initialState.destination.route
+        val targetRoute = targetState.destination.route
+        HorizontalNavTransition.exitTransition(initialRoute, targetRoute) ?:
+        BottomNavTransition.exitTransition()
+    }
+
     NavHost(
         navController = navController,
         startDestination = startDestination,
-        modifier = modifier
+        modifier = modifier,
+        enterTransition = { AppTransitions.enterTransition() },
+        exitTransition = { AppTransitions.exitTransition() },
+        popEnterTransition = { AppTransitions.popEnterTransition() },
+        popExitTransition = { AppTransitions.popExitTransition() }
     ) {
         composable<SplashRoute> {
             SplashScreen(onSplashComplete = onSplashComplete)
@@ -85,17 +129,34 @@ fun ReliveNavHost(
             },
             onNavigateToLikes = {
                 navController.navigate(LikesRoute)
-            }
+            },
+            enterTransition = mainEnterTransition,
+            exitTransition = mainExitTransition,
+            popEnterTransition = mainPopEnterTransition,
+            popExitTransition = mainPopExitTransition
         )
-        feedScreen()
+        feedScreen(
+            enterTransition = mainEnterTransition,
+            exitTransition = mainExitTransition,
+            popEnterTransition = mainPopEnterTransition,
+            popExitTransition = mainPopExitTransition
+        )
         likesScreen(
             onBack = { navController.popBackStack() }
         )
         statsScreen(
-            onBack = { navController.popBackStack() }
+            onBack = { navController.popBackStack() },
+            enterTransition = mainEnterTransition,
+            exitTransition = mainExitTransition,
+            popEnterTransition = mainPopEnterTransition,
+            popExitTransition = mainPopExitTransition
         )
         settingsScreen(
-            onBack = { navController.popBackStack() }
+            onBack = { navController.popBackStack() },
+            enterTransition = mainEnterTransition,
+            exitTransition = mainExitTransition,
+            popEnterTransition = mainPopEnterTransition,
+            popExitTransition = mainPopExitTransition
         )
         cleanScreen(
             onBack = { navController.popBackStack() }

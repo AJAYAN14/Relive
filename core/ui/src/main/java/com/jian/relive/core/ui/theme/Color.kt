@@ -91,6 +91,8 @@ val ReliveMonthCream = Color(0xFFF7F1E3)
 val ReliveMonthOlive = Color(0xFFA3CB38)
 
 val ReliveReviewBackground = Color(0xFFE5E5E5)
+val ReliveLiquidSurfaceLight = Color(0xFFFAFAFA)
+val ReliveLiquidSurfaceDark = Color(0xFF121212)
 
 
 

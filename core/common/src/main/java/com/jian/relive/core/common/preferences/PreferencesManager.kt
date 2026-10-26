@@ -1,6 +1,7 @@
 package com.jian.relive.core.common.preferences
 
 import android.content.Context
+import android.util.Log
 import com.google.gson.Gson
 import com.google.gson.reflect.TypeToken
 import com.jian.relive.core.common.language.AppLanguage
@@ -105,8 +106,9 @@ class PreferencesManager(context: Context) {
                 val json = prefs.getString("processed_ids", null)
                 val type = object : TypeToken<HashSet<Long>>() {}.type
                 _processedIds = try {
-                    if (json != null) gson.fromJson(json, type) else HashSet()
+                    if (!json.isNullOrBlank()) gson.fromJson(json, type) ?: HashSet() else HashSet()
                 } catch (e: Exception) {
+                    Log.e("PreferencesManager", "Failed to deserialize processed_ids", e)
                     HashSet()
                 }
             }
@@ -114,7 +116,7 @@ class PreferencesManager(context: Context) {
         }
         set(value) {
             _processedIds = value
-            prefs.edit().putString("processed_ids", gson.toJson(value)).apply()
+            prefs.edit().putString("processed_ids", gson.toJson(value)).commit()
         }
 
     var pendingTrashIds: MutableSet<Long>
@@ -123,8 +125,9 @@ class PreferencesManager(context: Context) {
                 val json = prefs.getString("pending_trash", null)
                 val type = object : TypeToken<HashSet<Long>>() {}.type
                 _pendingTrashIds = try {
-                    if (json != null) gson.fromJson(json, type) else HashSet()
+                    if (!json.isNullOrBlank()) gson.fromJson(json, type) ?: HashSet() else HashSet()
                 } catch (e: Exception) {
+                    Log.e("PreferencesManager", "Failed to deserialize pending_trash", e)
                     HashSet()
                 }
             }
@@ -132,7 +135,7 @@ class PreferencesManager(context: Context) {
         }
         set(value) {
             _pendingTrashIds = value
-            prefs.edit().putString("pending_trash", gson.toJson(value)).apply()
+            prefs.edit().putString("pending_trash", gson.toJson(value)).commit()
         }
 
     var likedIds: MutableSet<Long>
@@ -462,6 +465,10 @@ class PreferencesManager(context: Context) {
             prefs.edit().putBoolean("haptics_enabled", value).apply()
         }
 
+    var darkThemeEnabled: Boolean
+        get() = prefs.getBoolean("dark_theme_enabled", false)
+        set(value) = prefs.edit().putBoolean("dark_theme_enabled", value).apply()
+
     var avatarType: String
         get() = prefs.getString("avatar_type", "girl") ?: "girl"
         set(value) = prefs.edit().putString("avatar_type", value).apply()
@@ -469,6 +476,12 @@ class PreferencesManager(context: Context) {
     var batchSize: Int
         get() = prefs.getInt("batch_size", 16)
         set(value) = prefs.edit().putInt("batch_size", value).apply()
+
+    var autoAdvanceBatch: Boolean
+        get() = prefs.getBoolean("auto_advance_batch", false)
+        set(value) {
+            prefs.edit().putBoolean("auto_advance_batch", value).commit()
+        }
 
     var queueOrder: String
         get() = prefs.getString("queue_order", "random") ?: "random"
@@ -505,11 +518,11 @@ class PreferencesManager(context: Context) {
         }
 
     fun saveProcessedIdsToDisk(ids: Set<Long>) {
-        prefs.edit().putString("processed_ids", gson.toJson(ids)).apply()
+        prefs.edit().putString("processed_ids", gson.toJson(ids)).commit()
     }
 
     fun savePendingTrashIdsToDisk(ids: Set<Long>) {
-        prefs.edit().putString("pending_trash", gson.toJson(ids)).apply()
+        prefs.edit().putString("pending_trash", gson.toJson(ids)).commit()
     }
 
     fun saveLowQualityResultsToDisk(results: Map<Long, String>) {

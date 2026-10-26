@@ -113,13 +113,15 @@ class OrganizeViewModel(
                 allMediaList = sortMediaList(items, _uiState.value.queueOrder)
                 val folders = calculateFolderList(items)
                 val dropTargets = calculateFolderDropTargets(items, _uiState.value.folderUsage)
+                val currentPending = prefs.pendingTrashIds.toSet()
                 _uiState.update {
                     it.copy(
                         allMedia = allMediaList,
                         folderList = folders,
                         folderDropTargets = dropTargets,
                         processedIds = prefs.processedIds.toSet(),
-                        pendingTrashIds = prefs.pendingTrashIds.toSet()
+                        pendingTrashIds = currentPending,
+                        pendingTrashCount = currentPending.size
                     )
                 }
 
@@ -279,7 +281,9 @@ class OrganizeViewModel(
         }
 
         if (updatedDisplayMedia.isEmpty()) {
-            loadNextBatch()
+            if (prefs.autoAdvanceBatch || currentState.remainingCount == 0) {
+                loadNextBatch()
+            }
         }
     }
 

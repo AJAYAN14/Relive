@@ -27,10 +27,12 @@ import kotlinx.coroutines.flow.update
  */
 data class SettingsUiState(
     val batchSize: Int = 16,
+    val autoAdvanceBatch: Boolean = false,
     val queueOrder: String = "random",
     val muteVideos: Boolean = true,
     val soundEffectsEnabled: Boolean = true,
     val hapticsEnabled: Boolean = true,
+    val darkThemeEnabled: Boolean = false,
     val avatarType: String = "girl",
     val language: AppLanguage = AppLanguage.English,
     val isFirstLaunch: Boolean = false
@@ -46,10 +48,12 @@ class SettingsViewModel(
     private val _uiState = MutableStateFlow(
         SettingsUiState(
             batchSize = preferencesManager.batchSize,
+            autoAdvanceBatch = preferencesManager.autoAdvanceBatch,
             queueOrder = preferencesManager.queueOrder,
             muteVideos = preferencesManager.muteVideos,
             soundEffectsEnabled = preferencesManager.soundEffectsEnabled,
             hapticsEnabled = preferencesManager.hapticsEnabled,
+            darkThemeEnabled = preferencesManager.darkThemeEnabled,
             avatarType = preferencesManager.avatarType,
             language = preferencesManager.language,
             isFirstLaunch = !preferencesManager.onboardingCompleted
@@ -61,6 +65,11 @@ class SettingsViewModel(
         val coerced = size.coerceIn(10, 30)
         preferencesManager.batchSize = coerced
         _uiState.update { it.copy(batchSize = coerced) }
+    }
+
+    fun setAutoAdvanceBatch(autoAdvance: Boolean) {
+        preferencesManager.autoAdvanceBatch = autoAdvance
+        _uiState.update { it.copy(autoAdvanceBatch = autoAdvance) }
     }
 
     fun setQueueOrder(order: String) {
@@ -81,6 +90,11 @@ class SettingsViewModel(
     fun setHapticsEnabled(enabled: Boolean) {
         preferencesManager.hapticsEnabled = enabled
         _uiState.update { it.copy(hapticsEnabled = enabled) }
+    }
+
+    fun setDarkThemeEnabled(enabled: Boolean) {
+        preferencesManager.darkThemeEnabled = enabled
+        _uiState.update { it.copy(darkThemeEnabled = enabled) }
     }
 
     fun setAvatarType(type: String) {

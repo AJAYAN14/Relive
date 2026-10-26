@@ -44,6 +44,12 @@ android {
     }
 }
 
+kotlin {
+    compilerOptions {
+        freeCompilerArgs.add("-Xcontext-parameters")
+    }
+}
+
 dependencies {
     implementation(platform(libs.androidx.compose.bom))
     implementation(libs.androidx.activity.compose)

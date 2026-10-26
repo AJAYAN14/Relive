@@ -1,7 +1,9 @@
 package com.jian.relive
 
 import android.Manifest
+import android.content.Context
 import android.content.Intent
+import android.content.SharedPreferences
 import android.content.pm.PackageManager
 import android.net.Uri
 import android.os.Bundle
@@ -58,8 +60,11 @@ import com.jian.relive.feature.settings.WelcomeRoute
 import com.jian.relive.feature.stats.StatsRoute
 import com.jian.relive.ui.SplashRoute
 import com.jian.relive.navigation.AppBottomNavigationBar
+import com.jian.relive.navigation.LiquidBottomNavigationBar
 import com.jian.relive.navigation.MainNavTab
 import com.jian.relive.navigation.ReliveNavHost
+import com.kyant.backdrop.backdrops.layerBackdrop
+import com.kyant.backdrop.backdrops.rememberLayerBackdrop
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -116,6 +121,20 @@ class MainActivity : ComponentActivity() {
 
             var onboardingCompleted by remember { mutableStateOf(prefs.onboardingCompleted) }
             var currentTab by remember { mutableStateOf(MainNavTab.ORGANIZE) }
+
+            var darkThemeEnabled by remember { mutableStateOf(prefs.darkThemeEnabled) }
+            val sharedPreferences = remember { context.getSharedPreferences("photoo_prefs", Context.MODE_PRIVATE) }
+            DisposableEffect(sharedPreferences) {
+                val listener = SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+                    if (key == "dark_theme_enabled") {
+                        darkThemeEnabled = prefs.darkThemeEnabled
+                    }
+                }
+                sharedPreferences.registerOnSharedPreferenceChangeListener(listener)
+                onDispose {
+                    sharedPreferences.unregisterOnSharedPreferenceChangeListener(listener)
+                }
+            }
 
             fun checkMediaPermission(): Boolean {
                 val hasImages = ContextCompat.checkSelfPermission(
@@ -210,8 +229,10 @@ class MainActivity : ComponentActivity() {
 
             val showBottomBar = onboardingCompleted && isTopLevelRoute && !isOrganizeOverlayActive
 
+            val backdrop = rememberLayerBackdrop()
+
             CompositionLocalProvider(LocalAppGraph provides appGraph) {
-                ReliveTheme {
+                ReliveTheme(darkTheme = darkThemeEnabled) {
                     Scaffold(
                         modifier = Modifier.fillMaxSize(),
                         contentWindowInsets = WindowInsets(0.dp)
@@ -219,36 +240,42 @@ class MainActivity : ComponentActivity() {
                         Box(
                             modifier = Modifier.fillMaxSize()
                         ) {
-                            ReliveNavHost(
-                                navController = navController,
-                                startDestination = SplashRoute,
-                                hasPermission = hasPermission,
-                                onRequestPermission = requestPermissions,
-                                hasManageStorage = hasManageStorage,
-                                onRequestManageStorage = requestManageStorage,
-                                mediaRepository = appGraph.mediaRepository,
-                                onSplashComplete = {
-                                    val destination = if (onboardingCompleted) OrganizeRoute else WelcomeRoute
-                                    navController.navigate(destination) {
-                                        popUpTo(SplashRoute) {
-                                            inclusive = true
+                            Box(
+                                modifier = Modifier
+                                    .fillMaxSize()
+                                    .layerBackdrop(backdrop)
+                            ) {
+                                ReliveNavHost(
+                                    navController = navController,
+                                    startDestination = SplashRoute,
+                                    hasPermission = hasPermission,
+                                    onRequestPermission = requestPermissions,
+                                    hasManageStorage = hasManageStorage,
+                                    onRequestManageStorage = requestManageStorage,
+                                    mediaRepository = appGraph.mediaRepository,
+                                    onSplashComplete = {
+                                        val destination = if (onboardingCompleted) OrganizeRoute else WelcomeRoute
+                                        navController.navigate(destination) {
+                                            popUpTo(SplashRoute) {
+                                                inclusive = true
+                                            }
+                                            launchSingleTop = true
                                         }
-                                        launchSingleTop = true
-                                    }
-                                },
-                                onFinishWelcome = {
-                                    prefs.onboardingCompleted = true
-                                    onboardingCompleted = true
-                                    navController.navigate(OrganizeRoute) {
-                                        popUpTo(WelcomeRoute) {
-                                            inclusive = true
+                                    },
+                                    onFinishWelcome = {
+                                        prefs.onboardingCompleted = true
+                                        onboardingCompleted = true
+                                        navController.navigate(OrganizeRoute) {
+                                            popUpTo(WelcomeRoute) {
+                                                inclusive = true
+                                            }
+                                            launchSingleTop = true
                                         }
-                                        launchSingleTop = true
-                                    }
-                                },
-                                onOverlayActiveChanged = { isOrganizeOverlayActive = it },
-                                modifier = Modifier.fillMaxSize()
-                            )
+                                    },
+                                    onOverlayActiveChanged = { isOrganizeOverlayActive = it },
+                                    modifier = Modifier.fillMaxSize()
+                                )
+                            }
 
                             AnimatedVisibility(
                                 visible = showBottomBar,
@@ -257,9 +284,9 @@ class MainActivity : ComponentActivity() {
                                 modifier = Modifier
                                     .align(Alignment.BottomCenter)
                                     .navigationBarsPadding()
-                                    .padding(bottom = 16.dp)
+                                    .padding(bottom = 28.dp)
                             ) {
-                                AppBottomNavigationBar(
+                                LiquidBottomNavigationBar(
                                     currentTab = currentTab,
                                     onTabSelected = { tab ->
                                         currentTab = tab
@@ -276,7 +303,8 @@ class MainActivity : ComponentActivity() {
                                             launchSingleTop = true
                                             restoreState = true
                                         }
-                                    }
+                                    },
+                                    backdrop = backdrop
                                 )
                             }
                         }

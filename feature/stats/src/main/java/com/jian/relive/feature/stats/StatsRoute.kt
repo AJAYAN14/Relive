@@ -47,9 +47,18 @@ data object StatsRoute
  * 在导航图中注册拍摄统计功能页面入口。
  */
 fun NavGraphBuilder.statsScreen(
-    onBack: () -> Unit = {}
+    onBack: () -> Unit = {},
+    enterTransition: (androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.EnterTransition?)? = null,
+    exitTransition: (androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.ExitTransition?)? = null,
+    popEnterTransition: (androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.EnterTransition?)? = null,
+    popExitTransition: (androidx.compose.animation.AnimatedContentTransitionScope<androidx.navigation.NavBackStackEntry>.() -> androidx.compose.animation.ExitTransition?)? = null
 ) {
-    composable<StatsRoute> {
+    composable<StatsRoute>(
+        enterTransition = enterTransition,
+        exitTransition = exitTransition,
+        popEnterTransition = popEnterTransition,
+        popExitTransition = popExitTransition
+    ) {
         val viewModel: StatsViewModel = viewModel(factory = StatsViewModel.Factory)
         StatsRoute(
             viewModel = viewModel,

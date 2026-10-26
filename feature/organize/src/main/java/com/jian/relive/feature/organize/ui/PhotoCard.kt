@@ -430,9 +430,10 @@ private fun CardVideoPlayer(
         exoPlayer.volume = if (isMuted) 0f else 1f
     }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(exoPlayer) {
         onDispose {
             exoPlayer.pause()
+            VideoPlayerCache.release(exoPlayer)
         }
     }
 
