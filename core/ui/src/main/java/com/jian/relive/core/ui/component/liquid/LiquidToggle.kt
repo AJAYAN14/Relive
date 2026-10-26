@@ -1,5 +1,6 @@
 package com.jian.relive.core.ui.component.liquid
 
+import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
@@ -20,6 +21,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.drawscope.scale
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.graphics.lerp
+import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.semantics.Role
@@ -48,6 +50,7 @@ import com.kyant.backdrop.highlight.Highlight
 import com.kyant.backdrop.shadow.InnerShadow
 import com.kyant.backdrop.shadow.Shadow
 import kotlinx.coroutines.flow.collectLatest
+import kotlin.math.abs
 
 /**
  * 液态玻璃开关组件（标准值参数重载）。
@@ -116,8 +119,10 @@ fun LiquidToggle(
     val density = LocalDensity.current
     val isLtr = LocalLayoutDirection.current == LayoutDirection.Ltr
     val dragWidth = with(density) { 20f.dp.toPx() }
+    val touchSlop = with(density) { 6f.dp.toPx() }
     val animationScope = rememberCoroutineScope()
-    var didDrag by remember { mutableStateOf(false) }
+
+    var dragDistance by remember { mutableFloatStateOf(0f) }
     var fraction by remember { mutableFloatStateOf(if (selected()) 1f else 0f) }
 
     val dampedDragAnimation = remember(animationScope, enabled) {
@@ -128,23 +133,26 @@ fun LiquidToggle(
             visibilityThreshold = 0.001f,
             initialScale = 1f,
             pressedScale = 1.5f,
-            onDragStarted = {},
+            onDragStarted = {
+                dragDistance = 0f
+            },
             onDragStopped = {
                 if (!enabled) return@DampedDragAnimation
-                if (didDrag) {
-                    fraction = if (targetValue >= 0.5f) 1f else 0f
-                    onSelect(fraction == 1f)
-                    didDrag = false
+                if (dragDistance > touchSlop) {
+                    val target = if (fraction >= 0.5f) 1f else 0f
+                    fraction = target
+                    onSelect(target == 1f)
                 } else {
-                    fraction = if (selected()) 0f else 1f
-                    onSelect(fraction == 1f)
+                    val target = if (selected()) 0f else 1f
+                    fraction = target
+                    animateToValue(target)
+                    onSelect(target == 1f)
                 }
+                dragDistance = 0f
             },
             onDrag = { _, dragAmount ->
                 if (!enabled) return@DampedDragAnimation
-                if (!didDrag) {
-                    didDrag = dragAmount.x != 0f
-                }
+                dragDistance += abs(dragAmount.x)
                 val delta = dragAmount.x / dragWidth
                 fraction =
                     if (isLtr) (fraction + delta).fastCoerceIn(0f, 1f)
@@ -174,9 +182,19 @@ fun LiquidToggle(
     val trackBackdrop = rememberLayerBackdrop()
 
     Box(
-        modifier = modifier.graphicsLayer {
-            alpha = if (enabled) 1f else 0.38f
-        },
+        modifier = modifier
+            .graphicsLayer {
+                alpha = if (enabled) 1f else 0.38f
+            }
+            .pointerInput(enabled) {
+                if (!enabled) return@pointerInput
+                detectTapGestures {
+                    val target = if (selected()) 0f else 1f
+                    fraction = target
+                    dampedDragAnimation.animateToValue(target)
+                    onSelect(target == 1f)
+                }
+            },
         contentAlignment = Alignment.CenterStart
     ) {
         Box(

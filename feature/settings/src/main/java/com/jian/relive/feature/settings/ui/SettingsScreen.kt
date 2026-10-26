@@ -28,9 +28,8 @@ import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.FilterChipDefaults
 import androidx.compose.material3.Icon
-import androidx.compose.material3.Slider
-import androidx.compose.material3.SliderDefaults
 import androidx.compose.material3.Text
+import com.jian.relive.core.ui.component.liquid.LiquidSlider
 import com.jian.relive.core.ui.component.liquid.LiquidToggle
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -334,7 +333,7 @@ fun SettingsScreen(
                         Text(text = "$batchSize", fontSize = 16.sp, fontWeight = FontWeight.Bold, color = ReliveBlack)
                         Text(text = "30", fontSize = 12.sp, color = ReliveGray500)
                     }
-                    Slider(
+                    LiquidSlider(
                         value = batchSize.toFloat(),
                         onValueChange = { value ->
                             val rounded = value.roundToInt().coerceIn(10, 30)
@@ -344,12 +343,7 @@ fun SettingsScreen(
                             }
                         },
                         valueRange = 10f..30f,
-                        steps = 19,
-                        colors = SliderDefaults.colors(
-                            thumbColor = RelivePrimary,
-                            activeTrackColor = RelivePrimary,
-                            inactiveTrackColor = ReliveGray500.copy(alpha = 0.3f)
-                        )
+                        steps = 19
                     )
                 }
             }
