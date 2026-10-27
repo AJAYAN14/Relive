@@ -5,6 +5,8 @@ import android.view.TextureView
 import android.view.ViewGroup
 import android.widget.FrameLayout
 import androidx.annotation.OptIn
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.animation.core.tween
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
@@ -17,9 +19,12 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.blur
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.media3.common.MediaItem as ExoMediaItem
 import androidx.media3.common.Player
@@ -64,24 +69,84 @@ fun LiveFeedPlayer(
         else -> null
     }
 
-    if (playUri != null) {
-        ExoVideoSurface(
-            uri = playUri,
-            mimeType = item.mimeType,
-            isMuted = isMuted,
-            shouldPlay = shouldPlay,
-            placeholderUri = item.uri,
-            modifier = modifier
-        )
-    } else {
-        FeedImagePlaceholder(
+    Box(
+        modifier = modifier.fillMaxSize()
+    ) {
+        FeedAmbientBlurBackground(
             uri = item.uri,
-            modifier = modifier
+            modifier = Modifier.fillMaxSize()
+        )
+
+        if (playUri != null) {
+            ExoVideoSurface(
+                uri = playUri,
+                mimeType = item.mimeType,
+                isMuted = isMuted,
+                shouldPlay = shouldPlay,
+                placeholderUri = item.uri,
+                itemWidth = item.width,
+                itemHeight = item.height,
+                modifier = Modifier.fillMaxSize()
+            )
+        } else {
+            FeedImagePlaceholder(
+                uri = item.uri,
+                modifier = Modifier.fillMaxSize()
+            )
+        }
+    }
+}
+
+/**
+ * 弥散流光氛围高斯模糊背景层。
+ */
+@Composable
+private fun FeedAmbientBlurBackground(
+    uri: Uri,
+    modifier: Modifier = Modifier
+) {
+    val context = LocalContext.current
+    val request = remember(uri) {
+        ImageRequest.Builder(context)
+            .data(uri)
+            .memoryCachePolicy(CachePolicy.ENABLED)
+            .diskCachePolicy(CachePolicy.ENABLED)
+            .crossfade(true)
+            .build()
+    }
+
+    Box(
+        modifier = modifier
+            .fillMaxSize()
+            .clipToBounds()
+            .background(ReliveWhite)
+    ) {
+        AsyncImage(
+            model = request,
+            contentDescription = null,
+            contentScale = ContentScale.Crop,
+            modifier = Modifier
+                .fillMaxSize()
+                .graphicsLayer {
+                    scaleX = 1.8f
+                    scaleY = 1.8f
+                }
+                .blur(80.dp)
+                .graphicsLayer {
+                    alpha = 0.85f
+                }
+        )
+
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(ReliveWhite.copy(alpha = 0.5f))
         )
     }
 }
 
 @OptIn(UnstableApi::class)
+@Suppress("DEPRECATION")
 @Composable
 private fun ExoVideoSurface(
     uri: Uri,
@@ -89,12 +154,25 @@ private fun ExoVideoSurface(
     isMuted: Boolean,
     shouldPlay: Boolean,
     placeholderUri: Uri,
+    itemWidth: Int,
+    itemHeight: Int,
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
     val player = remember { VideoPlayerCache.get(context) }
+    val initialRatio = remember(itemWidth, itemHeight) {
+        if (itemWidth > 0 && itemHeight > 0) {
+            itemWidth.toFloat() / itemHeight
+        } else 0f
+    }
     var isFirstFrameRendered by remember(uri) { mutableStateOf(false) }
-    var aspectRatio by remember { mutableFloatStateOf(0f) }
+    var aspectRatio by remember(uri) { mutableFloatStateOf(initialRatio) }
+
+    val videoAlpha by animateFloatAsState(
+        targetValue = if (isFirstFrameRendered && aspectRatio > 0f) 1f else 0f,
+        animationSpec = tween(durationMillis = 150),
+        label = "VideoSurfaceAlpha"
+    )
 
     DisposableEffect(player) {
         onDispose {
@@ -127,9 +205,7 @@ private fun ExoVideoSurface(
     }
 
     Box(
-        modifier = modifier
-            .fillMaxSize()
-            .background(ReliveWhite)
+        modifier = modifier.fillMaxSize()
     ) {
         FeedImagePlaceholder(
             uri = placeholderUri,
@@ -140,6 +216,9 @@ private fun ExoVideoSurface(
             factory = { ctx ->
                 AspectRatioFrameLayout(ctx).apply {
                     resizeMode = AspectRatioFrameLayout.RESIZE_MODE_FIT
+                    if (aspectRatio > 0f) {
+                        setAspectRatio(aspectRatio)
+                    }
                     val textureView = TextureView(ctx).apply {
                         layoutParams = FrameLayout.LayoutParams(
                             ViewGroup.LayoutParams.MATCH_PARENT,
@@ -162,7 +241,7 @@ private fun ExoVideoSurface(
             modifier = Modifier
                 .fillMaxSize()
                 .graphicsLayer {
-                    alpha = if (isFirstFrameRendered) 1f else 0f
+                    alpha = videoAlpha
                 }
         )
 
@@ -174,14 +253,30 @@ private fun ExoVideoSurface(
 
                 override fun onVideoSizeChanged(videoSize: VideoSize) {
                     if (videoSize.width > 0 && videoSize.height > 0) {
-                        aspectRatio = videoSize.width.toFloat() / videoSize.height
+                        val rawRatio = (videoSize.width.toFloat() * videoSize.pixelWidthHeightRatio) / videoSize.height
+                        val finalRatio = if (videoSize.unappliedRotationDegrees == 90 || videoSize.unappliedRotationDegrees == 270) {
+                            if (rawRatio > 0f) 1f / rawRatio else 0f
+                        } else {
+                            rawRatio
+                        }
+                        if (finalRatio > 0f) {
+                            aspectRatio = finalRatio
+                        }
                     }
                 }
             }
             player.addListener(listener)
             val currentSize = player.videoSize
             if (currentSize.width > 0 && currentSize.height > 0) {
-                aspectRatio = currentSize.width.toFloat() / currentSize.height
+                val rawRatio = (currentSize.width.toFloat() * currentSize.pixelWidthHeightRatio) / currentSize.height
+                val finalRatio = if (currentSize.unappliedRotationDegrees == 90 || currentSize.unappliedRotationDegrees == 270) {
+                    if (rawRatio > 0f) 1f / rawRatio else 0f
+                } else {
+                    rawRatio
+                }
+                if (finalRatio > 0f) {
+                    aspectRatio = finalRatio
+                }
             }
             onDispose {
                 player.removeListener(listener)
@@ -196,19 +291,19 @@ private fun FeedImagePlaceholder(
     modifier: Modifier = Modifier
 ) {
     val context = LocalContext.current
-    val request = ImageRequest.Builder(context)
-        .data(uri)
-        .memoryCachePolicy(CachePolicy.ENABLED)
-        .diskCachePolicy(CachePolicy.ENABLED)
-        .crossfade(true)
-        .build()
+    val request = remember(uri) {
+        ImageRequest.Builder(context)
+            .data(uri)
+            .memoryCachePolicy(CachePolicy.ENABLED)
+            .diskCachePolicy(CachePolicy.ENABLED)
+            .crossfade(true)
+            .build()
+    }
 
     AsyncImage(
         model = request,
         contentDescription = null,
         contentScale = ContentScale.Fit,
-        modifier = modifier
-            .fillMaxSize()
-            .background(ReliveWhite)
+        modifier = modifier.fillMaxSize()
     )
 }

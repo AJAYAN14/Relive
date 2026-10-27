@@ -11,11 +11,11 @@
     <string name="feed_sound_muted">Sound Off</string>
     <string name="feed_sound_unmuted">Sound On</string>
 
-    <string name="feed_delete_confirm_title">Delete Media</string>
-    <string name="feed_delete_confirm_msg">Do you want to move this item to Trash?</string>
-    <string name="feed_delete_button">Delete</string>
+    <string name="feed_delete_confirm_title">Move to Trash</string>
+    <string name="feed_delete_confirm_msg">Move this item to Trash? You can review and clean it in Organize.</string>
+    <string name="feed_delete_button">Move to Trash</string>
     <string name="feed_cancel_button">Cancel</string>
-    <string name="feed_delete_success">Moved to Trash</string>
+    <string name="feed_delete_success">Moved to Trash, review in Organize</string>
 
     <string name="feed_tag_live">LIVE</string>
     <string name="feed_tag_video">VIDEO</string>

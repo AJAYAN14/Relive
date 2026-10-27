@@ -2,14 +2,12 @@ package com.jian.relive.feature.feed
 
 import android.app.Application
 import android.content.Context
-import android.content.IntentSender
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.ViewModelProvider
 import androidx.lifecycle.viewModelScope
 import androidx.lifecycle.viewmodel.initializer
 import androidx.lifecycle.viewmodel.viewModelFactory
 import com.jian.relive.core.common.preferences.PreferencesManager
-import com.jian.relive.core.media.FileOperationManager
 import com.jian.relive.core.media.MediaRepository
 import com.jian.relive.core.media.MotionPhotoHelper
 import com.jian.relive.core.model.MediaItem
@@ -152,34 +150,25 @@ class FeedViewModel(
     }
 
     /**
-     * 执行移入废纸篓删除操作。
+     * 将指定媒体移入应用内待删除队列（废纸篓暂存）。
      */
-    fun executeDelete(
-        target: MediaItem,
-        onIntentSender: (IntentSender) -> Unit,
-        onSuccess: () -> Unit
-    ) {
-        viewModelScope.launch {
-            val uris = listOfNotNull(target.uri, target.livePhotoVideoUri)
-            val intentSender = FileOperationManager.deleteMedia(
-                context = context,
-                uris = uris,
-                moveToTrash = true
-            )
-
-            if (intentSender != null) {
-                onIntentSender(intentSender)
-            } else {
-                onDeleteConfirmed(target)
-                onSuccess()
-            }
+    fun moveToPendingTrash(item: MediaItem) {
+        val pending = prefs.pendingTrashIds
+        pending.add(item.id)
+        val liveVideoId = item.livePhotoVideoId
+        if (liveVideoId != null) {
+            pending.add(liveVideoId)
         }
-    }
+        prefs.pendingTrashIds = pending
 
-    /**
-     * 确认删除完成后的状态清空与缓存注销。
-     */
-    fun onDeleteConfirmed(item: MediaItem) {
+        var currentStats = prefs.stats
+        currentStats = currentStats.copy(
+            processed = currentStats.processed + 1,
+            trashed = currentStats.trashed + 1,
+            savedSize = currentStats.savedSize + item.size
+        )
+        prefs.stats = currentStats
+
         MotionPhotoHelper.cleanCache(context, item.id)
 
         cachedAllMedia = cachedAllMedia.filter { it.id != item.id }
@@ -194,10 +183,12 @@ class FeedViewModel(
 
     private suspend fun applyFilter() = withContext(defaultDispatcher) {
         val filter = _uiState.value.filterType
+        val pendingTrash = prefs.pendingTrashIds.toSet()
+        val nonTrashed = cachedAllMedia.filter { !pendingTrash.contains(it.id) }
         val filtered = when (filter) {
-            FeedFilterType.ALL -> cachedAllMedia.filter { it.type == "video" || it.isLivePhoto }
-            FeedFilterType.LIVE -> cachedAllMedia.filter { it.isLivePhoto }
-            FeedFilterType.VIDEO -> cachedAllMedia.filter { it.type == "video" }
+            FeedFilterType.ALL -> nonTrashed.filter { it.type == "video" || it.isLivePhoto }
+            FeedFilterType.LIVE -> nonTrashed.filter { it.isLivePhoto }
+            FeedFilterType.VIDEO -> nonTrashed.filter { it.type == "video" }
         }.sortedByDescending { it.dateAdded }
 
         _uiState.update { it.copy(feedItems = filtered) }

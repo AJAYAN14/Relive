@@ -11,11 +11,11 @@
     <string name="feed_sound_muted">静音</string>
     <string name="feed_sound_unmuted">声音开启</string>
 
-    <string name="feed_delete_confirm_title">删除媒体</string>
-    <string name="feed_delete_confirm_msg">确定要将此项移入回收站吗？</string>
-    <string name="feed_delete_button">删除</string>
+    <string name="feed_delete_confirm_title">移入废纸篓</string>
+    <string name="feed_delete_confirm_msg">确定要将此项放入废纸篓吗？可在【整理】页面集中查看与清理。</string>
+    <string name="feed_delete_button">移入废纸篓</string>
     <string name="feed_cancel_button">取消</string>
-    <string name="feed_delete_success">已移入回收站</string>
+    <string name="feed_delete_success">已放入废纸篓，可在【整理】页面集中清理</string>
 
     <string name="feed_tag_live">实况</string>
     <string name="feed_tag_video">视频</string>

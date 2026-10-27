@@ -1,10 +1,6 @@
 package com.jian.relive.feature.feed
 
-import android.app.Activity
 import android.widget.Toast
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.IntentSenderRequest
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.Box
@@ -24,6 +20,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clipToBounds
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
@@ -122,22 +119,9 @@ internal fun FeedRoute(
     var isUserPaused by remember { mutableStateOf(false) }
     var isPlaybackReady by remember { mutableStateOf(false) }
 
-    var pendingTrashItem by remember { mutableStateOf<MediaItem?>(null) }
     var heartBurstTargetId by remember { mutableStateOf<Long?>(null) }
 
     val trashSuccessMsg = stringResource(R.string.feed_delete_success)
-    val deleteLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartIntentSenderForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val item = pendingTrashItem
-            if (item != null) {
-                viewModel.onDeleteConfirmed(item)
-                Toast.makeText(context, trashSuccessMsg, Toast.LENGTH_SHORT).show()
-            }
-        }
-        pendingTrashItem = null
-    }
 
     val pagerState = rememberPagerState(
         pageCount = { kotlin.math.max(1, uiState.feedItems.size) }
@@ -193,6 +177,7 @@ internal fun FeedRoute(
                     Box(
                         modifier = Modifier
                             .fillMaxSize()
+                            .clipToBounds()
                             .pointerInput(isCurrentPage) {
                                 if (isCurrentPage) {
                                     detectTapGestures(
@@ -290,18 +275,8 @@ internal fun FeedRoute(
                 val target = uiState.itemToDelete!!
                 FeedDeleteConfirmDialog(
                     onConfirm = {
-                        viewModel.setItemToDelete(null)
-                        viewModel.executeDelete(
-                            target = target,
-                            onIntentSender = { intentSender ->
-                                pendingTrashItem = target
-                                val request = IntentSenderRequest.Builder(intentSender).build()
-                                deleteLauncher.launch(request)
-                            },
-                            onSuccess = {
-                                Toast.makeText(context, trashSuccessMsg, Toast.LENGTH_SHORT).show()
-                            }
-                        )
+                        viewModel.moveToPendingTrash(target)
+                        Toast.makeText(context, trashSuccessMsg, Toast.LENGTH_SHORT).show()
                     },
                     onDismiss = {
                         viewModel.setItemToDelete(null)
